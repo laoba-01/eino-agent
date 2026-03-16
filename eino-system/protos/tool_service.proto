@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package tool;
+
+service ToolService {
+  rpc AnalyzeCodeError(AnalyzeCodeErrorRequest) returns (AnalyzeCodeErrorResponse);
+  rpc QuerySyntax(QuerySyntaxRequest) returns (QuerySyntaxResponse);
+  rpc GenerateProblemSolution(GenerateProblemSolutionRequest) returns (GenerateProblemSolutionResponse);
+}
+
+message AnalyzeCodeErrorRequest {
+  string code = 1;
+  string error_message = 2;
+  string language = 3;
+}
+
+message AnalyzeCodeErrorResponse {
+  string analysis = 1;
+  string suggested_fix = 2;
+  bool success = 3;
+}
+
+message QuerySyntaxRequest {
+  string language = 1;
+  string query = 2;
+  string context = 3;
+}
+
+message QuerySyntaxResponse {
+  string explanation = 1;
+  string example = 2;
+  bool success = 3;
+}
+
+message GenerateProblemSolutionRequest {
+  string problem = 1;
+  string difficulty = 2;
+  string language = 3;
+}
+
+message GenerateProblemSolutionResponse {
+  string approach = 1;
+  string code = 2;
+  string explanation = 3;
+  bool success = 4;
+}
