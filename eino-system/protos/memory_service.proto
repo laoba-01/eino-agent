@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package memory;
+
+service MemoryService {
+  rpc SaveContext(SaveContextRequest) returns (SaveContextResponse);
+  rpc GetContext(GetContextRequest) returns (GetContextResponse);
+  rpc DeleteContext(DeleteContextRequest) returns (DeleteContextResponse);
+  rpc UpdateContext(UpdateContextRequest) returns (UpdateContextResponse);
+}
+
+message SaveContextRequest {
+  string user_id = 1;
+  map<string, string> context = 2;
+  int64 ttl = 3; // Time to live in seconds
+}
+
+message SaveContextResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message GetContextRequest {
+  string user_id = 1;
+  repeated string keys = 2; // Optional: specific keys to retrieve
+}
+
+message GetContextResponse {
+  map<string, string> context = 1;
+  bool success = 2;
+  string error = 3;
+}
+
+message DeleteContextRequest {
+  string user_id = 1;
+  repeated string keys = 2; // Optional: specific keys to delete
+}
+
+message DeleteContextResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message UpdateContextRequest {
+  string user_id = 1;
+  map<string, string> context = 2;
+  int64 ttl = 3; // Optional: new TTL
+}
+
+message UpdateContextResponse {
+  bool success = 1;
+  string error = 2;
+}
