@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -10,6 +9,8 @@ import (
 	"log"
 	"net"
 	"time"
+
+	"eino/auth-service/proto"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/redis/go-redis/v9"
@@ -33,7 +34,7 @@ type UserInfo struct {
 }
 
 type AuthServer struct {
-	UnimplementedAuthServiceServer
+	proto.UnimplementedAuthServiceServer
 }
 
 func generateUserID() string {
@@ -65,7 +66,6 @@ func generateToken(userID string) (string, error) {
 		return "", err
 	}
 
-	// Store token in Redis
 	ctx := context.Background()
 	err = rdb.Set(ctx, "token:"+tokenString, userID, tokenDuration).Err()
 	if err != nil {
@@ -78,13 +78,11 @@ func generateToken(userID string) (string, error) {
 func validateToken(tokenString string) (string, bool) {
 	ctx := context.Background()
 
-	// Check if token exists in Redis
 	userID, err := rdb.Get(ctx, "token:"+tokenString).Result()
 	if err != nil {
 		return "", false
 	}
 
-	// Parse and validate JWT
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -110,33 +108,30 @@ func validateToken(tokenString string) (string, bool) {
 	return userID, true
 }
 
-func (s *AuthServer) Register(ctx context.Context, req *RegisterRequest) (*RegisterResponse, error) {
-	// Check if username already exists
+func (s *AuthServer) Register(ctx context.Context, req *proto.RegisterRequest) (*proto.RegisterResponse, error) {
 	usernameKey := "user:" + req.Username
 	exists, err := rdb.Exists(ctx, usernameKey).Result()
 	if err != nil {
-		return &RegisterResponse{
+		return &proto.RegisterResponse{
 			Success: false,
 			Message: "Database error",
 		}, err
 	}
 	if exists > 0 {
-		return &RegisterResponse{
+		return &proto.RegisterResponse{
 			Success: false,
 			Message: "Username already exists",
 		}, nil
 	}
 
-	// Hash password
 	hashedPassword, err := hashPassword(req.Password)
 	if err != nil {
-		return &RegisterResponse{
+		return &proto.RegisterResponse{
 			Success: false,
 			Message: "Failed to hash password",
 		}, err
 	}
 
-	// Create user
 	userID := generateUserID()
 	user := UserInfo{
 		UserID:   userID,
@@ -147,16 +142,15 @@ func (s *AuthServer) Register(ctx context.Context, req *RegisterRequest) (*Regis
 
 	userJSON, err := json.Marshal(user)
 	if err != nil {
-		return &RegisterResponse{
+		return &proto.RegisterResponse{
 			Success: false,
 			Message: "Failed to create user",
 		}, err
 	}
 
-	// Store user in Redis
 	err = rdb.Set(ctx, "user:"+req.Username, userJSON, 0).Err()
 	if err != nil {
-		return &RegisterResponse{
+		return &proto.RegisterResponse{
 			Success: false,
 			Message: "Failed to store user",
 		}, err
@@ -164,52 +158,48 @@ func (s *AuthServer) Register(ctx context.Context, req *RegisterRequest) (*Regis
 
 	log.Printf("User registered: %s (ID: %s)", req.Username, userID)
 
-	return &RegisterResponse{
+	return &proto.RegisterResponse{
 		Success: true,
 		Message: "Registration successful",
-		UserID:  userID,
+		UserId:  userID,
 	}, nil
 }
 
-func (s *AuthServer) Login(ctx context.Context, req *LoginRequest) (*LoginResponse, error) {
-	// Get user from Redis
+func (s *AuthServer) Login(ctx context.Context, req *proto.LoginRequest) (*proto.LoginResponse, error) {
 	usernameKey := "user:" + req.Username
 	userJSON, err := rdb.Get(ctx, usernameKey).Result()
 	if err != nil {
 		if err == redis.Nil {
-			return &LoginResponse{
+			return &proto.LoginResponse{
 				Success: false,
 				Message: "User not found",
 			}, nil
 		}
-		return &LoginResponse{
+		return &proto.LoginResponse{
 			Success: false,
 			Message: "Database error",
 		}, err
 	}
 
-	// Parse user
 	var user UserInfo
 	err = json.Unmarshal([]byte(userJSON), &user)
 	if err != nil {
-		return &LoginResponse{
+		return &proto.LoginResponse{
 			Success: false,
 			Message: "Failed to parse user data",
 		}, err
 	}
 
-	// Check password
 	if !checkPassword(req.Password, user.Password) {
-		return &LoginResponse{
+		return &proto.LoginResponse{
 			Success: false,
 			Message: "Invalid password",
 		}, nil
 	}
 
-	// Generate token
 	token, err := generateToken(user.UserID)
 	if err != nil {
-		return &LoginResponse{
+		return &proto.LoginResponse{
 			Success: false,
 			Message: "Failed to generate token",
 		}, err
@@ -217,69 +207,66 @@ func (s *AuthServer) Login(ctx context.Context, req *LoginRequest) (*LoginRespon
 
 	log.Printf("User logged in: %s (ID: %s)", req.Username, user.UserID)
 
-	return &LoginResponse{
+	return &proto.LoginResponse{
 		Success: true,
 		Message:  "Login successful",
 		Token:    token,
-		UserID:   user.UserID,
+		UserId:   user.UserID,
 	}, nil
 }
 
-func (s *AuthServer) ValidateToken(ctx context.Context, req *ValidateTokenRequest) (*ValidateTokenResponse, error) {
+func (s *AuthServer) ValidateToken(ctx context.Context, req *proto.ValidateTokenRequest) (*proto.ValidateTokenResponse, error) {
 	userID, valid := validateToken(req.Token)
 	if !valid {
-		return &ValidateTokenResponse{
+		return &proto.ValidateTokenResponse{
 			Valid:   false,
 			Message: "Invalid token",
 		}, nil
 	}
 
-	return &ValidateTokenResponse{
+	return &proto.ValidateTokenResponse{
 		Valid:   true,
-		UserID:  userID,
+		UserId:  userID,
 		Message: "Token is valid",
 	}, nil
 }
 
-func (s *AuthServer) Logout(ctx context.Context, req *LogoutRequest) (*LogoutResponse, error) {
+func (s *AuthServer) Logout(ctx context.Context, req *proto.LogoutRequest) (*proto.LogoutResponse, error) {
 	err := rdb.Del(ctx, "token:"+req.Token).Err()
 	if err != nil {
-		return &LogoutResponse{
+		return &proto.LogoutResponse{
 			Success: false,
 			Message: "Failed to logout",
 		}, err
 	}
 
-	return &LogoutResponse{
+	return &proto.LogoutResponse{
 		Success: true,
 		Message: "Logout successful",
 	}, nil
 }
 
 func main() {
-	// Connect to Redis
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",
 		DB:       0,
 	})
 
-	// Test Redis connection
 	ctx := context.Background()
 	_, err := rdb.Ping(ctx).Result()
 	if err != nil {
-		log.Fatalf("Failed to connect to Redis: %v", err)
+		log.Printf("Warning: Failed to connect to Redis: %v", err)
+		log.Println("Auth Service will start but login/register will not work without Redis...")
 	}
-	log.Println("Connected to Redis")
 
-	// Start gRPC server
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
 	s := grpc.NewServer()
-	RegisterAuthServiceServer(s, &AuthServer{})
+	proto.RegisterAuthServiceServer(s, &AuthServer{})
 
 	log.Printf("Auth Service listening on %s", port)
 	if err := s.Serve(lis); err != nil {

@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package tool;
 
+option go_package = "./proto";
+
 service ToolService {
   rpc AnalyzeCodeError(AnalyzeCodeErrorRequest) returns (AnalyzeCodeErrorResponse);
   rpc QuerySyntax(QuerySyntaxRequest) returns (QuerySyntaxResponse);
