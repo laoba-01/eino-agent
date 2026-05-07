@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package memory;
 
+option go_package = "./proto";
+
 service MemoryService {
   rpc SaveContext(SaveContextRequest) returns (SaveContextResponse);
   rpc GetContext(GetContextRequest) returns (GetContextResponse);
