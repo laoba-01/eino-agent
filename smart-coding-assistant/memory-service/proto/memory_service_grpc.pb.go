@@ -23,16 +23,24 @@ const (
 	MemoryService_GetContext_FullMethodName    = "/memory.MemoryService/GetContext"
 	MemoryService_DeleteContext_FullMethodName = "/memory.MemoryService/DeleteContext"
 	MemoryService_UpdateContext_FullMethodName = "/memory.MemoryService/UpdateContext"
+	MemoryService_SaveVector_FullMethodName    = "/memory.MemoryService/SaveVector"
+	MemoryService_SearchSimilar_FullMethodName = "/memory.MemoryService/SearchSimilar"
+	MemoryService_DeleteVector_FullMethodName  = "/memory.MemoryService/DeleteVector"
 )
 
 // MemoryServiceClient is the client API for MemoryService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MemoryServiceClient interface {
+	// Key-value context (Redis)
 	SaveContext(ctx context.Context, in *SaveContextRequest, opts ...grpc.CallOption) (*SaveContextResponse, error)
 	GetContext(ctx context.Context, in *GetContextRequest, opts ...grpc.CallOption) (*GetContextResponse, error)
 	DeleteContext(ctx context.Context, in *DeleteContextRequest, opts ...grpc.CallOption) (*DeleteContextResponse, error)
 	UpdateContext(ctx context.Context, in *UpdateContextRequest, opts ...grpc.CallOption) (*UpdateContextResponse, error)
+	// Vector operations (Milvus)
+	SaveVector(ctx context.Context, in *SaveVectorRequest, opts ...grpc.CallOption) (*SaveVectorResponse, error)
+	SearchSimilar(ctx context.Context, in *SearchSimilarRequest, opts ...grpc.CallOption) (*SearchSimilarResponse, error)
+	DeleteVector(ctx context.Context, in *DeleteVectorRequest, opts ...grpc.CallOption) (*DeleteVectorResponse, error)
 }
 
 type memoryServiceClient struct {
@@ -83,14 +91,49 @@ func (c *memoryServiceClient) UpdateContext(ctx context.Context, in *UpdateConte
 	return out, nil
 }
 
+func (c *memoryServiceClient) SaveVector(ctx context.Context, in *SaveVectorRequest, opts ...grpc.CallOption) (*SaveVectorResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SaveVectorResponse)
+	err := c.cc.Invoke(ctx, MemoryService_SaveVector_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *memoryServiceClient) SearchSimilar(ctx context.Context, in *SearchSimilarRequest, opts ...grpc.CallOption) (*SearchSimilarResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SearchSimilarResponse)
+	err := c.cc.Invoke(ctx, MemoryService_SearchSimilar_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *memoryServiceClient) DeleteVector(ctx context.Context, in *DeleteVectorRequest, opts ...grpc.CallOption) (*DeleteVectorResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteVectorResponse)
+	err := c.cc.Invoke(ctx, MemoryService_DeleteVector_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MemoryServiceServer is the server API for MemoryService service.
 // All implementations must embed UnimplementedMemoryServiceServer
 // for forward compatibility.
 type MemoryServiceServer interface {
+	// Key-value context (Redis)
 	SaveContext(context.Context, *SaveContextRequest) (*SaveContextResponse, error)
 	GetContext(context.Context, *GetContextRequest) (*GetContextResponse, error)
 	DeleteContext(context.Context, *DeleteContextRequest) (*DeleteContextResponse, error)
 	UpdateContext(context.Context, *UpdateContextRequest) (*UpdateContextResponse, error)
+	// Vector operations (Milvus)
+	SaveVector(context.Context, *SaveVectorRequest) (*SaveVectorResponse, error)
+	SearchSimilar(context.Context, *SearchSimilarRequest) (*SearchSimilarResponse, error)
+	DeleteVector(context.Context, *DeleteVectorRequest) (*DeleteVectorResponse, error)
 	mustEmbedUnimplementedMemoryServiceServer()
 }
 
@@ -112,6 +155,15 @@ func (UnimplementedMemoryServiceServer) DeleteContext(context.Context, *DeleteCo
 }
 func (UnimplementedMemoryServiceServer) UpdateContext(context.Context, *UpdateContextRequest) (*UpdateContextResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateContext not implemented")
+}
+func (UnimplementedMemoryServiceServer) SaveVector(context.Context, *SaveVectorRequest) (*SaveVectorResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SaveVector not implemented")
+}
+func (UnimplementedMemoryServiceServer) SearchSimilar(context.Context, *SearchSimilarRequest) (*SearchSimilarResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SearchSimilar not implemented")
+}
+func (UnimplementedMemoryServiceServer) DeleteVector(context.Context, *DeleteVectorRequest) (*DeleteVectorResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteVector not implemented")
 }
 func (UnimplementedMemoryServiceServer) mustEmbedUnimplementedMemoryServiceServer() {}
 func (UnimplementedMemoryServiceServer) testEmbeddedByValue()                       {}
@@ -206,6 +258,60 @@ func _MemoryService_UpdateContext_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MemoryService_SaveVector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SaveVectorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MemoryServiceServer).SaveVector(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MemoryService_SaveVector_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MemoryServiceServer).SaveVector(ctx, req.(*SaveVectorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MemoryService_SearchSimilar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchSimilarRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MemoryServiceServer).SearchSimilar(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MemoryService_SearchSimilar_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MemoryServiceServer).SearchSimilar(ctx, req.(*SearchSimilarRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MemoryService_DeleteVector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteVectorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MemoryServiceServer).DeleteVector(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MemoryService_DeleteVector_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MemoryServiceServer).DeleteVector(ctx, req.(*DeleteVectorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MemoryService_ServiceDesc is the grpc.ServiceDesc for MemoryService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +334,18 @@ var MemoryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateContext",
 			Handler:    _MemoryService_UpdateContext_Handler,
+		},
+		{
+			MethodName: "SaveVector",
+			Handler:    _MemoryService_SaveVector_Handler,
+		},
+		{
+			MethodName: "SearchSimilar",
+			Handler:    _MemoryService_SearchSimilar_Handler,
+		},
+		{
+			MethodName: "DeleteVector",
+			Handler:    _MemoryService_DeleteVector_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
