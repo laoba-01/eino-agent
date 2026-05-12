@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.1
 // - protoc             v7.34.1
-// source: protos/memory_service.proto
+// source: memory_service.proto
 
 package proto
 
@@ -19,13 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	MemoryService_SaveContext_FullMethodName   = "/memory.MemoryService/SaveContext"
-	MemoryService_GetContext_FullMethodName    = "/memory.MemoryService/GetContext"
-	MemoryService_DeleteContext_FullMethodName = "/memory.MemoryService/DeleteContext"
-	MemoryService_UpdateContext_FullMethodName = "/memory.MemoryService/UpdateContext"
-	MemoryService_SaveVector_FullMethodName    = "/memory.MemoryService/SaveVector"
-	MemoryService_SearchSimilar_FullMethodName = "/memory.MemoryService/SearchSimilar"
-	MemoryService_DeleteVector_FullMethodName  = "/memory.MemoryService/DeleteVector"
+	MemoryService_SaveContext_FullMethodName        = "/memory.MemoryService/SaveContext"
+	MemoryService_GetContext_FullMethodName         = "/memory.MemoryService/GetContext"
+	MemoryService_DeleteContext_FullMethodName      = "/memory.MemoryService/DeleteContext"
+	MemoryService_UpdateContext_FullMethodName      = "/memory.MemoryService/UpdateContext"
+	MemoryService_SaveVector_FullMethodName         = "/memory.MemoryService/SaveVector"
+	MemoryService_SearchSimilar_FullMethodName      = "/memory.MemoryService/SearchSimilar"
+	MemoryService_DeleteVector_FullMethodName       = "/memory.MemoryService/DeleteVector"
+	MemoryService_SaveKnowledgePoint_FullMethodName = "/memory.MemoryService/SaveKnowledgePoint"
+	MemoryService_GetKnowledgePoints_FullMethodName = "/memory.MemoryService/GetKnowledgePoints"
+	MemoryService_GetLearningStats_FullMethodName   = "/memory.MemoryService/GetLearningStats"
 )
 
 // MemoryServiceClient is the client API for MemoryService service.
@@ -41,6 +44,10 @@ type MemoryServiceClient interface {
 	SaveVector(ctx context.Context, in *SaveVectorRequest, opts ...grpc.CallOption) (*SaveVectorResponse, error)
 	SearchSimilar(ctx context.Context, in *SearchSimilarRequest, opts ...grpc.CallOption) (*SearchSimilarResponse, error)
 	DeleteVector(ctx context.Context, in *DeleteVectorRequest, opts ...grpc.CallOption) (*DeleteVectorResponse, error)
+	// Knowledge point tracking
+	SaveKnowledgePoint(ctx context.Context, in *SaveKnowledgePointRequest, opts ...grpc.CallOption) (*SaveKnowledgePointResponse, error)
+	GetKnowledgePoints(ctx context.Context, in *GetKnowledgePointsRequest, opts ...grpc.CallOption) (*GetKnowledgePointsResponse, error)
+	GetLearningStats(ctx context.Context, in *GetLearningStatsRequest, opts ...grpc.CallOption) (*GetLearningStatsResponse, error)
 }
 
 type memoryServiceClient struct {
@@ -121,6 +128,36 @@ func (c *memoryServiceClient) DeleteVector(ctx context.Context, in *DeleteVector
 	return out, nil
 }
 
+func (c *memoryServiceClient) SaveKnowledgePoint(ctx context.Context, in *SaveKnowledgePointRequest, opts ...grpc.CallOption) (*SaveKnowledgePointResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SaveKnowledgePointResponse)
+	err := c.cc.Invoke(ctx, MemoryService_SaveKnowledgePoint_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *memoryServiceClient) GetKnowledgePoints(ctx context.Context, in *GetKnowledgePointsRequest, opts ...grpc.CallOption) (*GetKnowledgePointsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetKnowledgePointsResponse)
+	err := c.cc.Invoke(ctx, MemoryService_GetKnowledgePoints_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *memoryServiceClient) GetLearningStats(ctx context.Context, in *GetLearningStatsRequest, opts ...grpc.CallOption) (*GetLearningStatsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLearningStatsResponse)
+	err := c.cc.Invoke(ctx, MemoryService_GetLearningStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MemoryServiceServer is the server API for MemoryService service.
 // All implementations must embed UnimplementedMemoryServiceServer
 // for forward compatibility.
@@ -134,6 +171,10 @@ type MemoryServiceServer interface {
 	SaveVector(context.Context, *SaveVectorRequest) (*SaveVectorResponse, error)
 	SearchSimilar(context.Context, *SearchSimilarRequest) (*SearchSimilarResponse, error)
 	DeleteVector(context.Context, *DeleteVectorRequest) (*DeleteVectorResponse, error)
+	// Knowledge point tracking
+	SaveKnowledgePoint(context.Context, *SaveKnowledgePointRequest) (*SaveKnowledgePointResponse, error)
+	GetKnowledgePoints(context.Context, *GetKnowledgePointsRequest) (*GetKnowledgePointsResponse, error)
+	GetLearningStats(context.Context, *GetLearningStatsRequest) (*GetLearningStatsResponse, error)
 	mustEmbedUnimplementedMemoryServiceServer()
 }
 
@@ -164,6 +205,15 @@ func (UnimplementedMemoryServiceServer) SearchSimilar(context.Context, *SearchSi
 }
 func (UnimplementedMemoryServiceServer) DeleteVector(context.Context, *DeleteVectorRequest) (*DeleteVectorResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteVector not implemented")
+}
+func (UnimplementedMemoryServiceServer) SaveKnowledgePoint(context.Context, *SaveKnowledgePointRequest) (*SaveKnowledgePointResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SaveKnowledgePoint not implemented")
+}
+func (UnimplementedMemoryServiceServer) GetKnowledgePoints(context.Context, *GetKnowledgePointsRequest) (*GetKnowledgePointsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetKnowledgePoints not implemented")
+}
+func (UnimplementedMemoryServiceServer) GetLearningStats(context.Context, *GetLearningStatsRequest) (*GetLearningStatsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetLearningStats not implemented")
 }
 func (UnimplementedMemoryServiceServer) mustEmbedUnimplementedMemoryServiceServer() {}
 func (UnimplementedMemoryServiceServer) testEmbeddedByValue()                       {}
@@ -312,6 +362,60 @@ func _MemoryService_DeleteVector_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MemoryService_SaveKnowledgePoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SaveKnowledgePointRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MemoryServiceServer).SaveKnowledgePoint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MemoryService_SaveKnowledgePoint_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MemoryServiceServer).SaveKnowledgePoint(ctx, req.(*SaveKnowledgePointRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MemoryService_GetKnowledgePoints_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetKnowledgePointsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MemoryServiceServer).GetKnowledgePoints(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MemoryService_GetKnowledgePoints_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MemoryServiceServer).GetKnowledgePoints(ctx, req.(*GetKnowledgePointsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MemoryService_GetLearningStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLearningStatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MemoryServiceServer).GetLearningStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MemoryService_GetLearningStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MemoryServiceServer).GetLearningStats(ctx, req.(*GetLearningStatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MemoryService_ServiceDesc is the grpc.ServiceDesc for MemoryService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -347,7 +451,19 @@ var MemoryService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "DeleteVector",
 			Handler:    _MemoryService_DeleteVector_Handler,
 		},
+		{
+			MethodName: "SaveKnowledgePoint",
+			Handler:    _MemoryService_SaveKnowledgePoint_Handler,
+		},
+		{
+			MethodName: "GetKnowledgePoints",
+			Handler:    _MemoryService_GetKnowledgePoints_Handler,
+		},
+		{
+			MethodName: "GetLearningStats",
+			Handler:    _MemoryService_GetLearningStats_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "protos/memory_service.proto",
+	Metadata: "memory_service.proto",
 }

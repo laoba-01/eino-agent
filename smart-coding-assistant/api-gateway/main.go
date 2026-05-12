@@ -8,14 +8,19 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	coreProto "eino/core-service/proto"
+	authProto "eino/auth-service/proto"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
 	authServiceAddr = "localhost:50054"
-	jwtSecret       = "your-secret-key-change-in-production"
+	coreServiceAddr = "localhost:50051"
 )
 
-// 定义请求和响应结构
 type ChatRequest struct {
 	Message string            `json:"message"`
 	Context map[string]string `json:"context"`
@@ -27,7 +32,6 @@ type ChatResponse struct {
 	Context    map[string]string `json:"context"`
 }
 
-// 认证相关请求和响应
 type RegisterRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -52,12 +56,35 @@ type LoginResponse struct {
 	UserID  string `json:"user_id,omitempty"`
 }
 
-// 错误响应
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
-// 处理注册请求
+var (
+	coreClient coreProto.CoreServiceClient
+	authClient authProto.AuthServiceClient
+)
+
+func initCoreServiceClient() error {
+	conn, err := grpc.Dial(coreServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return fmt.Errorf("连接核心服务失败: %v", err)
+	}
+	coreClient = coreProto.NewCoreServiceClient(conn)
+	log.Println("成功连接到核心学习服务:", coreServiceAddr)
+	return nil
+}
+
+func initAuthServiceClient() error {
+	conn, err := grpc.Dial(authServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return fmt.Errorf("连接认证服务失败: %v", err)
+	}
+	authClient = authProto.NewAuthServiceClient(conn)
+	log.Println("成功连接到认证服务:", authServiceAddr)
+	return nil
+}
+
 func handleRegister(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -70,7 +97,6 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 验证输入
 	if req.Username == "" || req.Password == "" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -78,21 +104,46 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 调用认证服务
-	// TODO: 实现与 auth-service 的 gRPC 调用
-	// 暂时返回模拟响应
+	if authClient != nil {
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+
+		resp, err := authClient.Register(ctx, &authProto.RegisterRequest{
+			Username: req.Username,
+			Password: req.Password,
+			Email:    req.Email,
+		})
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(ErrorResponse{Error: fmt.Sprintf("注册失败: %v", err)})
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if resp.Success {
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusBadRequest)
+		}
+		json.NewEncoder(w).Encode(RegisterResponse{
+			Success: resp.Success,
+			Message: resp.Message,
+			UserID:  resp.UserId,
+		})
+		return
+	}
+
 	resp := RegisterResponse{
 		Success: true,
 		Message: "Registration successful (mock)",
 		UserID:  "mock-user-id",
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 }
 
-// 处理登录请求
 func handleLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -105,7 +156,6 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 验证输入
 	if req.Username == "" || req.Password == "" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -113,29 +163,53 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 调用认证服务
-	// TODO: 实现与 auth-service 的 gRPC 调用
-	// 暂时返回模拟响应
+	if authClient != nil {
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+
+		resp, err := authClient.Login(ctx, &authProto.LoginRequest{
+			Username: req.Username,
+			Password: req.Password,
+		})
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(ErrorResponse{Error: fmt.Sprintf("登录失败: %v", err)})
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if resp.Success {
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusUnauthorized)
+		}
+		json.NewEncoder(w).Encode(LoginResponse{
+			Success: resp.Success,
+			Message: resp.Message,
+			Token:   resp.Token,
+			UserID:  resp.UserId,
+		})
+		return
+	}
+
 	resp := LoginResponse{
 		Success: true,
 		Message: "Login successful (mock)",
 		Token:   "mock-jwt-token",
 		UserID:  "mock-user-id",
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 }
 
-// 处理登出请求
 func handleLogout(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// 从请求头获取 token
 	token := r.Header.Get("Authorization")
 	if token == "" {
 		w.Header().Set("Content-Type", "application/json")
@@ -144,48 +218,70 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 移除 "Bearer " 前缀
 	token = strings.TrimPrefix(token, "Bearer ")
 
-	// TODO: 调用认证服务注销 token
+	if authClient != nil {
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+
+		resp, err := authClient.Logout(ctx, &authProto.LogoutRequest{Token: token})
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(ErrorResponse{Error: fmt.Sprintf("登出失败: %v", err)})
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]bool{"success": resp.Success})
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]bool{"success": true})
 }
 
-// 认证中间件
 func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// 从请求头获取 token
 		token := r.Header.Get("Authorization")
 		if token == "" {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(ErrorResponse{Error: "Authorization token required"})
+			json.NewEncoder(w).Encode(ErrorResponse{Error: "No token provided"})
 			return
 		}
 
-		// 移除 "Bearer " 前缀
 		token = strings.TrimPrefix(token, "Bearer ")
 
-		// TODO: 调用认证服务验证 token
-		// 暂时模拟验证通过
-		userID := "mock-user-id"
+		if authClient != nil {
+			ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+			defer cancel()
 
-		// 将 user_id 添加到上下文
+			resp, err := authClient.ValidateToken(ctx, &authProto.ValidateTokenRequest{Token: token})
+			if err != nil || !resp.Valid {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusUnauthorized)
+				json.NewEncoder(w).Encode(ErrorResponse{Error: "Invalid token"})
+				return
+			}
+			ctx = context.WithValue(r.Context(), "user_id", resp.UserId)
+			next(w, r.WithContext(ctx))
+			return
+		}
+
+		userID := "mock-user-id"
 		ctx := context.WithValue(r.Context(), "user_id", userID)
 		next(w, r.WithContext(ctx))
 	}
 }
 
-// 处理聊天请求
 func handleChat(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// 从上下文获取 user_id
 	userID := r.Context().Value("user_id").(string)
 
 	var req ChatRequest
@@ -194,12 +290,28 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 这里将实现与核心对话服务的gRPC调用
-	// 暂时返回模拟响应
+	log.Printf("收到聊天请求，用户ID: %s, 消息: %s", userID, req.Message)
+
+	grpcReq := &coreProto.ChatRequest{
+		UserId:  userID,
+		Message: req.Message,
+		Context: req.Context,
+	}
+
+	grpcCtx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
+
+	grpcResp, err := coreClient.Chat(grpcCtx, grpcReq)
+	if err != nil {
+		log.Printf("调用核心服务出错: %v", err)
+		http.Error(w, fmt.Sprintf("Service error: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	resp := ChatResponse{
-		Response:   fmt.Sprintf("Hello %s! Chat response from API Gateway!", userID),
-		IsFinished: true,
-		Context:    req.Context,
+		Response:   grpcResp.Response,
+		IsFinished: grpcResp.IsFinished,
+		Context:    grpcResp.Context,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -207,14 +319,70 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-// 健康检查
+func handleLearningReport(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID := r.Context().Value("user_id").(string)
+
+	grpcCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	resp, err := coreClient.GetLearningReport(grpcCtx, &coreProto.GetLearningReportRequest{
+		UserId: userID,
+	})
+	if err != nil {
+		log.Printf("获取学习报告出错: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(ErrorResponse{Error: fmt.Sprintf("获取学习报告失败: %v", err)})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+func handleLearningPoints(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID := r.Context().Value("user_id").(string)
+
+	sortBy := r.URL.Query().Get("sort_by")
+	if sortBy == "" {
+		sortBy = "last_seen"
+	}
+
+	grpcCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	resp, err := coreClient.GetKnowledgePoints(grpcCtx, &coreProto.GetKnowledgePointsRequest{
+		UserId: userID,
+		SortBy: sortBy,
+	})
+	if err != nil {
+		log.Printf("获取知识点列表出错: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(ErrorResponse{Error: fmt.Sprintf("获取知识点列表失败: %v", err)})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
 func handleHealth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok", "timestamp": time.Now().Format(time.RFC3339)})
 }
 
-// CORS 中间件
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -231,21 +399,35 @@ func corsMiddleware(next http.Handler) http.Handler {
 }
 
 func main() {
+	if err := initCoreServiceClient(); err != nil {
+		log.Printf("警告: 无法连接到核心学习服务: %v", err)
+	}
+
+	if err := initAuthServiceClient(); err != nil {
+		log.Printf("警告: 无法连接到认证服务: %v", err)
+	}
+
 	mux := http.NewServeMux()
 
-	// 公开路由（无需认证）
 	mux.HandleFunc("/api/auth/register", handleRegister)
 	mux.HandleFunc("/api/auth/login", handleLogin)
 	mux.HandleFunc("/api/auth/logout", handleLogout)
 	mux.HandleFunc("/health", handleHealth)
-
-	// 受保护的路由（需要认证）
 	mux.HandleFunc("/api/chat", authMiddleware(handleChat))
+	mux.HandleFunc("/api/learning/report", authMiddleware(handleLearningReport))
+	mux.HandleFunc("/api/learning/points", authMiddleware(handleLearningPoints))
 
-	// 包装 CORS 中间件
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" {
+			http.ServeFile(w, r, "d:/agent/smart-coding-assistant/frontend/index.html")
+			return
+		}
+		filePath := "d:/agent/smart-coding-assistant/frontend" + r.URL.Path
+		http.ServeFile(w, r, filePath)
+	})
+
 	handler := corsMiddleware(mux)
 
-	// 启动HTTP服务器
 	port := "8080"
 	fmt.Printf("API Gateway listening on port %s...\n", port)
 	if err := http.ListenAndServe(":"+port, handler); err != nil {

@@ -7,6 +7,8 @@ option go_package = "./proto";
 service CoreService {
   rpc Chat(ChatRequest) returns (ChatResponse);
   rpc GetHistory(GetHistoryRequest) returns (GetHistoryResponse);
+  rpc GetLearningReport(GetLearningReportRequest) returns (GetLearningReportResponse);
+  rpc GetKnowledgePoints(GetKnowledgePointsRequest) returns (GetKnowledgePointsResponse);
 }
 
 message ChatRequest {
@@ -37,4 +39,40 @@ message ChatMessage {
   string role = 3; // user or assistant
   string content = 4;
   int64 timestamp = 5;
+}
+
+// --- Learning report messages ---
+
+message GetLearningReportRequest {
+  string user_id = 1;
+}
+
+message GetLearningReportResponse {
+  int32 total_topics = 1;
+  double average_mastery = 2;
+  int32 total_interactions = 3;
+  int32 mastered_count = 4;
+  int32 learning_count = 5;
+  int32 weak_count = 6;
+  repeated KnowledgePointDetail recent_points = 7;
+  repeated KnowledgePointDetail weak_points = 8;
+}
+
+message KnowledgePointDetail {
+  string topic = 1;
+  double mastery = 2;
+  int32 interactions = 3;
+  int64 last_seen = 4;
+}
+
+message GetKnowledgePointsRequest {
+  string user_id = 1;
+  int32 limit = 2;
+  string sort_by = 3;
+}
+
+message GetKnowledgePointsResponse {
+  bool success = 1;
+  string error = 2;
+  repeated KnowledgePointDetail points = 3;
 }

@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v7.34.1
-// source: protos/memory_service.proto
+// source: memory_service.proto
 
 package proto
 
@@ -32,7 +32,7 @@ type SaveContextRequest struct {
 
 func (x *SaveContextRequest) Reset() {
 	*x = SaveContextRequest{}
-	mi := &file_protos_memory_service_proto_msgTypes[0]
+	mi := &file_memory_service_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +44,7 @@ func (x *SaveContextRequest) String() string {
 func (*SaveContextRequest) ProtoMessage() {}
 
 func (x *SaveContextRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[0]
+	mi := &file_memory_service_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +57,7 @@ func (x *SaveContextRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveContextRequest.ProtoReflect.Descriptor instead.
 func (*SaveContextRequest) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{0}
+	return file_memory_service_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *SaveContextRequest) GetUserId() string {
@@ -91,7 +91,7 @@ type SaveContextResponse struct {
 
 func (x *SaveContextResponse) Reset() {
 	*x = SaveContextResponse{}
-	mi := &file_protos_memory_service_proto_msgTypes[1]
+	mi := &file_memory_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -103,7 +103,7 @@ func (x *SaveContextResponse) String() string {
 func (*SaveContextResponse) ProtoMessage() {}
 
 func (x *SaveContextResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[1]
+	mi := &file_memory_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -116,7 +116,7 @@ func (x *SaveContextResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveContextResponse.ProtoReflect.Descriptor instead.
 func (*SaveContextResponse) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{1}
+	return file_memory_service_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *SaveContextResponse) GetSuccess() bool {
@@ -143,7 +143,7 @@ type GetContextRequest struct {
 
 func (x *GetContextRequest) Reset() {
 	*x = GetContextRequest{}
-	mi := &file_protos_memory_service_proto_msgTypes[2]
+	mi := &file_memory_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -155,7 +155,7 @@ func (x *GetContextRequest) String() string {
 func (*GetContextRequest) ProtoMessage() {}
 
 func (x *GetContextRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[2]
+	mi := &file_memory_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -168,7 +168,7 @@ func (x *GetContextRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetContextRequest.ProtoReflect.Descriptor instead.
 func (*GetContextRequest) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{2}
+	return file_memory_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *GetContextRequest) GetUserId() string {
@@ -196,7 +196,7 @@ type GetContextResponse struct {
 
 func (x *GetContextResponse) Reset() {
 	*x = GetContextResponse{}
-	mi := &file_protos_memory_service_proto_msgTypes[3]
+	mi := &file_memory_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -208,7 +208,7 @@ func (x *GetContextResponse) String() string {
 func (*GetContextResponse) ProtoMessage() {}
 
 func (x *GetContextResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[3]
+	mi := &file_memory_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -221,7 +221,7 @@ func (x *GetContextResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetContextResponse.ProtoReflect.Descriptor instead.
 func (*GetContextResponse) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{3}
+	return file_memory_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetContextResponse) GetContext() map[string]string {
@@ -255,7 +255,7 @@ type DeleteContextRequest struct {
 
 func (x *DeleteContextRequest) Reset() {
 	*x = DeleteContextRequest{}
-	mi := &file_protos_memory_service_proto_msgTypes[4]
+	mi := &file_memory_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -267,7 +267,7 @@ func (x *DeleteContextRequest) String() string {
 func (*DeleteContextRequest) ProtoMessage() {}
 
 func (x *DeleteContextRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[4]
+	mi := &file_memory_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -280,7 +280,7 @@ func (x *DeleteContextRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteContextRequest.ProtoReflect.Descriptor instead.
 func (*DeleteContextRequest) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{4}
+	return file_memory_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *DeleteContextRequest) GetUserId() string {
@@ -307,7 +307,7 @@ type DeleteContextResponse struct {
 
 func (x *DeleteContextResponse) Reset() {
 	*x = DeleteContextResponse{}
-	mi := &file_protos_memory_service_proto_msgTypes[5]
+	mi := &file_memory_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -319,7 +319,7 @@ func (x *DeleteContextResponse) String() string {
 func (*DeleteContextResponse) ProtoMessage() {}
 
 func (x *DeleteContextResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[5]
+	mi := &file_memory_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -332,7 +332,7 @@ func (x *DeleteContextResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteContextResponse.ProtoReflect.Descriptor instead.
 func (*DeleteContextResponse) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{5}
+	return file_memory_service_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *DeleteContextResponse) GetSuccess() bool {
@@ -360,7 +360,7 @@ type UpdateContextRequest struct {
 
 func (x *UpdateContextRequest) Reset() {
 	*x = UpdateContextRequest{}
-	mi := &file_protos_memory_service_proto_msgTypes[6]
+	mi := &file_memory_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -372,7 +372,7 @@ func (x *UpdateContextRequest) String() string {
 func (*UpdateContextRequest) ProtoMessage() {}
 
 func (x *UpdateContextRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[6]
+	mi := &file_memory_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -385,7 +385,7 @@ func (x *UpdateContextRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateContextRequest.ProtoReflect.Descriptor instead.
 func (*UpdateContextRequest) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{6}
+	return file_memory_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *UpdateContextRequest) GetUserId() string {
@@ -419,7 +419,7 @@ type UpdateContextResponse struct {
 
 func (x *UpdateContextResponse) Reset() {
 	*x = UpdateContextResponse{}
-	mi := &file_protos_memory_service_proto_msgTypes[7]
+	mi := &file_memory_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -431,7 +431,7 @@ func (x *UpdateContextResponse) String() string {
 func (*UpdateContextResponse) ProtoMessage() {}
 
 func (x *UpdateContextResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[7]
+	mi := &file_memory_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -444,7 +444,7 @@ func (x *UpdateContextResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateContextResponse.ProtoReflect.Descriptor instead.
 func (*UpdateContextResponse) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{7}
+	return file_memory_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UpdateContextResponse) GetSuccess() bool {
@@ -471,7 +471,7 @@ type SaveVectorRequest struct {
 
 func (x *SaveVectorRequest) Reset() {
 	*x = SaveVectorRequest{}
-	mi := &file_protos_memory_service_proto_msgTypes[8]
+	mi := &file_memory_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -483,7 +483,7 @@ func (x *SaveVectorRequest) String() string {
 func (*SaveVectorRequest) ProtoMessage() {}
 
 func (x *SaveVectorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[8]
+	mi := &file_memory_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -496,7 +496,7 @@ func (x *SaveVectorRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveVectorRequest.ProtoReflect.Descriptor instead.
 func (*SaveVectorRequest) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{8}
+	return file_memory_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *SaveVectorRequest) GetCollection() string {
@@ -524,7 +524,7 @@ type VectorData struct {
 
 func (x *VectorData) Reset() {
 	*x = VectorData{}
-	mi := &file_protos_memory_service_proto_msgTypes[9]
+	mi := &file_memory_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -536,7 +536,7 @@ func (x *VectorData) String() string {
 func (*VectorData) ProtoMessage() {}
 
 func (x *VectorData) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[9]
+	mi := &file_memory_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -549,7 +549,7 @@ func (x *VectorData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VectorData.ProtoReflect.Descriptor instead.
 func (*VectorData) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{9}
+	return file_memory_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *VectorData) GetId() int64 {
@@ -584,7 +584,7 @@ type SaveVectorResponse struct {
 
 func (x *SaveVectorResponse) Reset() {
 	*x = SaveVectorResponse{}
-	mi := &file_protos_memory_service_proto_msgTypes[10]
+	mi := &file_memory_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -596,7 +596,7 @@ func (x *SaveVectorResponse) String() string {
 func (*SaveVectorResponse) ProtoMessage() {}
 
 func (x *SaveVectorResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[10]
+	mi := &file_memory_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -609,7 +609,7 @@ func (x *SaveVectorResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveVectorResponse.ProtoReflect.Descriptor instead.
 func (*SaveVectorResponse) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{10}
+	return file_memory_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *SaveVectorResponse) GetSuccess() bool {
@@ -645,7 +645,7 @@ type SearchSimilarRequest struct {
 
 func (x *SearchSimilarRequest) Reset() {
 	*x = SearchSimilarRequest{}
-	mi := &file_protos_memory_service_proto_msgTypes[11]
+	mi := &file_memory_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -657,7 +657,7 @@ func (x *SearchSimilarRequest) String() string {
 func (*SearchSimilarRequest) ProtoMessage() {}
 
 func (x *SearchSimilarRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[11]
+	mi := &file_memory_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -670,7 +670,7 @@ func (x *SearchSimilarRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchSimilarRequest.ProtoReflect.Descriptor instead.
 func (*SearchSimilarRequest) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{11}
+	return file_memory_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *SearchSimilarRequest) GetCollection() string {
@@ -712,7 +712,7 @@ type SearchSimilarResponse struct {
 
 func (x *SearchSimilarResponse) Reset() {
 	*x = SearchSimilarResponse{}
-	mi := &file_protos_memory_service_proto_msgTypes[12]
+	mi := &file_memory_service_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -724,7 +724,7 @@ func (x *SearchSimilarResponse) String() string {
 func (*SearchSimilarResponse) ProtoMessage() {}
 
 func (x *SearchSimilarResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[12]
+	mi := &file_memory_service_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -737,7 +737,7 @@ func (x *SearchSimilarResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchSimilarResponse.ProtoReflect.Descriptor instead.
 func (*SearchSimilarResponse) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{12}
+	return file_memory_service_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *SearchSimilarResponse) GetSuccess() bool {
@@ -773,7 +773,7 @@ type SearchResult struct {
 
 func (x *SearchResult) Reset() {
 	*x = SearchResult{}
-	mi := &file_protos_memory_service_proto_msgTypes[13]
+	mi := &file_memory_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -785,7 +785,7 @@ func (x *SearchResult) String() string {
 func (*SearchResult) ProtoMessage() {}
 
 func (x *SearchResult) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[13]
+	mi := &file_memory_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -798,7 +798,7 @@ func (x *SearchResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchResult.ProtoReflect.Descriptor instead.
 func (*SearchResult) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{13}
+	return file_memory_service_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *SearchResult) GetId() int64 {
@@ -839,7 +839,7 @@ type DeleteVectorRequest struct {
 
 func (x *DeleteVectorRequest) Reset() {
 	*x = DeleteVectorRequest{}
-	mi := &file_protos_memory_service_proto_msgTypes[14]
+	mi := &file_memory_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -851,7 +851,7 @@ func (x *DeleteVectorRequest) String() string {
 func (*DeleteVectorRequest) ProtoMessage() {}
 
 func (x *DeleteVectorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[14]
+	mi := &file_memory_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -864,7 +864,7 @@ func (x *DeleteVectorRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteVectorRequest.ProtoReflect.Descriptor instead.
 func (*DeleteVectorRequest) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{14}
+	return file_memory_service_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *DeleteVectorRequest) GetCollection() string {
@@ -891,7 +891,7 @@ type DeleteVectorResponse struct {
 
 func (x *DeleteVectorResponse) Reset() {
 	*x = DeleteVectorResponse{}
-	mi := &file_protos_memory_service_proto_msgTypes[15]
+	mi := &file_memory_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -903,7 +903,7 @@ func (x *DeleteVectorResponse) String() string {
 func (*DeleteVectorResponse) ProtoMessage() {}
 
 func (x *DeleteVectorResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_memory_service_proto_msgTypes[15]
+	mi := &file_memory_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -916,7 +916,7 @@ func (x *DeleteVectorResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteVectorResponse.ProtoReflect.Descriptor instead.
 func (*DeleteVectorResponse) Descriptor() ([]byte, []int) {
-	return file_protos_memory_service_proto_rawDescGZIP(), []int{15}
+	return file_memory_service_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *DeleteVectorResponse) GetSuccess() bool {
@@ -933,11 +933,479 @@ func (x *DeleteVectorResponse) GetError() string {
 	return ""
 }
 
-var File_protos_memory_service_proto protoreflect.FileDescriptor
+type KnowledgePoint struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Topic         string                 `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
+	Mastery       float64                `protobuf:"fixed64,2,opt,name=mastery,proto3" json:"mastery,omitempty"`                     // 0-1 mastery level
+	Interactions  int32                  `protobuf:"varint,3,opt,name=interactions,proto3" json:"interactions,omitempty"`            // Number of interactions
+	LastSeen      int64                  `protobuf:"varint,4,opt,name=last_seen,json=lastSeen,proto3" json:"last_seen,omitempty"`    // Last seen timestamp
+	FirstSeen     int64                  `protobuf:"varint,5,opt,name=first_seen,json=firstSeen,proto3" json:"first_seen,omitempty"` // First seen timestamp
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
 
-const file_protos_memory_service_proto_rawDesc = "" +
+func (x *KnowledgePoint) Reset() {
+	*x = KnowledgePoint{}
+	mi := &file_memory_service_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KnowledgePoint) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KnowledgePoint) ProtoMessage() {}
+
+func (x *KnowledgePoint) ProtoReflect() protoreflect.Message {
+	mi := &file_memory_service_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KnowledgePoint.ProtoReflect.Descriptor instead.
+func (*KnowledgePoint) Descriptor() ([]byte, []int) {
+	return file_memory_service_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *KnowledgePoint) GetTopic() string {
+	if x != nil {
+		return x.Topic
+	}
+	return ""
+}
+
+func (x *KnowledgePoint) GetMastery() float64 {
+	if x != nil {
+		return x.Mastery
+	}
+	return 0
+}
+
+func (x *KnowledgePoint) GetInteractions() int32 {
+	if x != nil {
+		return x.Interactions
+	}
+	return 0
+}
+
+func (x *KnowledgePoint) GetLastSeen() int64 {
+	if x != nil {
+		return x.LastSeen
+	}
+	return 0
+}
+
+func (x *KnowledgePoint) GetFirstSeen() int64 {
+	if x != nil {
+		return x.FirstSeen
+	}
+	return 0
+}
+
+type SaveKnowledgePointRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Point         *KnowledgePoint        `protobuf:"bytes,2,opt,name=point,proto3" json:"point,omitempty"`
+	Merge         bool                   `protobuf:"varint,3,opt,name=merge,proto3" json:"merge,omitempty"` // true=merge into existing, false=overwrite
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SaveKnowledgePointRequest) Reset() {
+	*x = SaveKnowledgePointRequest{}
+	mi := &file_memory_service_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveKnowledgePointRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveKnowledgePointRequest) ProtoMessage() {}
+
+func (x *SaveKnowledgePointRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_memory_service_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveKnowledgePointRequest.ProtoReflect.Descriptor instead.
+func (*SaveKnowledgePointRequest) Descriptor() ([]byte, []int) {
+	return file_memory_service_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *SaveKnowledgePointRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *SaveKnowledgePointRequest) GetPoint() *KnowledgePoint {
+	if x != nil {
+		return x.Point
+	}
+	return nil
+}
+
+func (x *SaveKnowledgePointRequest) GetMerge() bool {
+	if x != nil {
+		return x.Merge
+	}
+	return false
+}
+
+type SaveKnowledgePointResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	Topic         string                 `protobuf:"bytes,3,opt,name=topic,proto3" json:"topic,omitempty"` // Final stored topic name
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SaveKnowledgePointResponse) Reset() {
+	*x = SaveKnowledgePointResponse{}
+	mi := &file_memory_service_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveKnowledgePointResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveKnowledgePointResponse) ProtoMessage() {}
+
+func (x *SaveKnowledgePointResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_memory_service_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveKnowledgePointResponse.ProtoReflect.Descriptor instead.
+func (*SaveKnowledgePointResponse) Descriptor() ([]byte, []int) {
+	return file_memory_service_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *SaveKnowledgePointResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *SaveKnowledgePointResponse) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+func (x *SaveKnowledgePointResponse) GetTopic() string {
+	if x != nil {
+		return x.Topic
+	}
+	return ""
+}
+
+type GetKnowledgePointsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`                // 0=return all
+	SortBy        string                 `protobuf:"bytes,3,opt,name=sort_by,json=sortBy,proto3" json:"sort_by,omitempty"` // "mastery"/"interactions"/"last_seen"
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetKnowledgePointsRequest) Reset() {
+	*x = GetKnowledgePointsRequest{}
+	mi := &file_memory_service_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetKnowledgePointsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetKnowledgePointsRequest) ProtoMessage() {}
+
+func (x *GetKnowledgePointsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_memory_service_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetKnowledgePointsRequest.ProtoReflect.Descriptor instead.
+func (*GetKnowledgePointsRequest) Descriptor() ([]byte, []int) {
+	return file_memory_service_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *GetKnowledgePointsRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *GetKnowledgePointsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetKnowledgePointsRequest) GetSortBy() string {
+	if x != nil {
+		return x.SortBy
+	}
+	return ""
+}
+
+type GetKnowledgePointsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	Points        []*KnowledgePoint      `protobuf:"bytes,3,rep,name=points,proto3" json:"points,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetKnowledgePointsResponse) Reset() {
+	*x = GetKnowledgePointsResponse{}
+	mi := &file_memory_service_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetKnowledgePointsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetKnowledgePointsResponse) ProtoMessage() {}
+
+func (x *GetKnowledgePointsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_memory_service_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetKnowledgePointsResponse.ProtoReflect.Descriptor instead.
+func (*GetKnowledgePointsResponse) Descriptor() ([]byte, []int) {
+	return file_memory_service_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *GetKnowledgePointsResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *GetKnowledgePointsResponse) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+func (x *GetKnowledgePointsResponse) GetPoints() []*KnowledgePoint {
+	if x != nil {
+		return x.Points
+	}
+	return nil
+}
+
+type GetLearningStatsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetLearningStatsRequest) Reset() {
+	*x = GetLearningStatsRequest{}
+	mi := &file_memory_service_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLearningStatsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLearningStatsRequest) ProtoMessage() {}
+
+func (x *GetLearningStatsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_memory_service_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLearningStatsRequest.ProtoReflect.Descriptor instead.
+func (*GetLearningStatsRequest) Descriptor() ([]byte, []int) {
+	return file_memory_service_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *GetLearningStatsRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type GetLearningStatsResponse struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Success           bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Error             string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	TotalTopics       int32                  `protobuf:"varint,3,opt,name=total_topics,json=totalTopics,proto3" json:"total_topics,omitempty"`
+	AverageMastery    float64                `protobuf:"fixed64,4,opt,name=average_mastery,json=averageMastery,proto3" json:"average_mastery,omitempty"`
+	TotalInteractions int32                  `protobuf:"varint,5,opt,name=total_interactions,json=totalInteractions,proto3" json:"total_interactions,omitempty"`
+	MasteredCount     int32                  `protobuf:"varint,6,opt,name=mastered_count,json=masteredCount,proto3" json:"mastered_count,omitempty"` // mastery >= 0.8
+	LearningCount     int32                  `protobuf:"varint,7,opt,name=learning_count,json=learningCount,proto3" json:"learning_count,omitempty"` // 0.3 <= mastery < 0.8
+	WeakCount         int32                  `protobuf:"varint,8,opt,name=weak_count,json=weakCount,proto3" json:"weak_count,omitempty"`             // mastery < 0.3
+	StudyStartDate    int64                  `protobuf:"varint,9,opt,name=study_start_date,json=studyStartDate,proto3" json:"study_start_date,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *GetLearningStatsResponse) Reset() {
+	*x = GetLearningStatsResponse{}
+	mi := &file_memory_service_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLearningStatsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLearningStatsResponse) ProtoMessage() {}
+
+func (x *GetLearningStatsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_memory_service_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLearningStatsResponse.ProtoReflect.Descriptor instead.
+func (*GetLearningStatsResponse) Descriptor() ([]byte, []int) {
+	return file_memory_service_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *GetLearningStatsResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *GetLearningStatsResponse) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+func (x *GetLearningStatsResponse) GetTotalTopics() int32 {
+	if x != nil {
+		return x.TotalTopics
+	}
+	return 0
+}
+
+func (x *GetLearningStatsResponse) GetAverageMastery() float64 {
+	if x != nil {
+		return x.AverageMastery
+	}
+	return 0
+}
+
+func (x *GetLearningStatsResponse) GetTotalInteractions() int32 {
+	if x != nil {
+		return x.TotalInteractions
+	}
+	return 0
+}
+
+func (x *GetLearningStatsResponse) GetMasteredCount() int32 {
+	if x != nil {
+		return x.MasteredCount
+	}
+	return 0
+}
+
+func (x *GetLearningStatsResponse) GetLearningCount() int32 {
+	if x != nil {
+		return x.LearningCount
+	}
+	return 0
+}
+
+func (x *GetLearningStatsResponse) GetWeakCount() int32 {
+	if x != nil {
+		return x.WeakCount
+	}
+	return 0
+}
+
+func (x *GetLearningStatsResponse) GetStudyStartDate() int64 {
+	if x != nil {
+		return x.StudyStartDate
+	}
+	return 0
+}
+
+var File_memory_service_proto protoreflect.FileDescriptor
+
+const file_memory_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1bprotos/memory_service.proto\x12\x06memory\"\xbe\x01\n" +
+	"\x14memory_service.proto\x12\x06memory\"\xbe\x01\n" +
 	"\x12SaveContextRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12A\n" +
 	"\acontext\x18\x02 \x03(\v2'.memory.SaveContextRequest.ContextEntryR\acontext\x12\x10\n" +
@@ -1020,7 +1488,43 @@ const file_protos_memory_service_proto_rawDesc = "" +
 	"\x03ids\x18\x02 \x03(\x03R\x03ids\"F\n" +
 	"\x14DeleteVectorResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x14\n" +
-	"\x05error\x18\x02 \x01(\tR\x05error2\x96\x04\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error\"\xa0\x01\n" +
+	"\x0eKnowledgePoint\x12\x14\n" +
+	"\x05topic\x18\x01 \x01(\tR\x05topic\x12\x18\n" +
+	"\amastery\x18\x02 \x01(\x01R\amastery\x12\"\n" +
+	"\finteractions\x18\x03 \x01(\x05R\finteractions\x12\x1b\n" +
+	"\tlast_seen\x18\x04 \x01(\x03R\blastSeen\x12\x1d\n" +
+	"\n" +
+	"first_seen\x18\x05 \x01(\x03R\tfirstSeen\"x\n" +
+	"\x19SaveKnowledgePointRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12,\n" +
+	"\x05point\x18\x02 \x01(\v2\x16.memory.KnowledgePointR\x05point\x12\x14\n" +
+	"\x05merge\x18\x03 \x01(\bR\x05merge\"b\n" +
+	"\x1aSaveKnowledgePointResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x14\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error\x12\x14\n" +
+	"\x05topic\x18\x03 \x01(\tR\x05topic\"c\n" +
+	"\x19GetKnowledgePointsRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x17\n" +
+	"\asort_by\x18\x03 \x01(\tR\x06sortBy\"|\n" +
+	"\x1aGetKnowledgePointsResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x14\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error\x12.\n" +
+	"\x06points\x18\x03 \x03(\v2\x16.memory.KnowledgePointR\x06points\"2\n" +
+	"\x17GetLearningStatsRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"\xdc\x02\n" +
+	"\x18GetLearningStatsResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x14\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error\x12!\n" +
+	"\ftotal_topics\x18\x03 \x01(\x05R\vtotalTopics\x12'\n" +
+	"\x0faverage_mastery\x18\x04 \x01(\x01R\x0eaverageMastery\x12-\n" +
+	"\x12total_interactions\x18\x05 \x01(\x05R\x11totalInteractions\x12%\n" +
+	"\x0emastered_count\x18\x06 \x01(\x05R\rmasteredCount\x12%\n" +
+	"\x0elearning_count\x18\a \x01(\x05R\rlearningCount\x12\x1d\n" +
+	"\n" +
+	"weak_count\x18\b \x01(\x05R\tweakCount\x12(\n" +
+	"\x10study_start_date\x18\t \x01(\x03R\x0estudyStartDate2\xa7\x06\n" +
 	"\rMemoryService\x12F\n" +
 	"\vSaveContext\x12\x1a.memory.SaveContextRequest\x1a\x1b.memory.SaveContextResponse\x12C\n" +
 	"\n" +
@@ -1030,95 +1534,113 @@ const file_protos_memory_service_proto_rawDesc = "" +
 	"\n" +
 	"SaveVector\x12\x19.memory.SaveVectorRequest\x1a\x1a.memory.SaveVectorResponse\x12L\n" +
 	"\rSearchSimilar\x12\x1c.memory.SearchSimilarRequest\x1a\x1d.memory.SearchSimilarResponse\x12I\n" +
-	"\fDeleteVector\x12\x1b.memory.DeleteVectorRequest\x1a\x1c.memory.DeleteVectorResponseB\tZ\a./protob\x06proto3"
+	"\fDeleteVector\x12\x1b.memory.DeleteVectorRequest\x1a\x1c.memory.DeleteVectorResponse\x12[\n" +
+	"\x12SaveKnowledgePoint\x12!.memory.SaveKnowledgePointRequest\x1a\".memory.SaveKnowledgePointResponse\x12[\n" +
+	"\x12GetKnowledgePoints\x12!.memory.GetKnowledgePointsRequest\x1a\".memory.GetKnowledgePointsResponse\x12U\n" +
+	"\x10GetLearningStats\x12\x1f.memory.GetLearningStatsRequest\x1a .memory.GetLearningStatsResponseB\tZ\a./protob\x06proto3"
 
 var (
-	file_protos_memory_service_proto_rawDescOnce sync.Once
-	file_protos_memory_service_proto_rawDescData []byte
+	file_memory_service_proto_rawDescOnce sync.Once
+	file_memory_service_proto_rawDescData []byte
 )
 
-func file_protos_memory_service_proto_rawDescGZIP() []byte {
-	file_protos_memory_service_proto_rawDescOnce.Do(func() {
-		file_protos_memory_service_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_protos_memory_service_proto_rawDesc), len(file_protos_memory_service_proto_rawDesc)))
+func file_memory_service_proto_rawDescGZIP() []byte {
+	file_memory_service_proto_rawDescOnce.Do(func() {
+		file_memory_service_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_memory_service_proto_rawDesc), len(file_memory_service_proto_rawDesc)))
 	})
-	return file_protos_memory_service_proto_rawDescData
+	return file_memory_service_proto_rawDescData
 }
 
-var file_protos_memory_service_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
-var file_protos_memory_service_proto_goTypes = []any{
-	(*SaveContextRequest)(nil),    // 0: memory.SaveContextRequest
-	(*SaveContextResponse)(nil),   // 1: memory.SaveContextResponse
-	(*GetContextRequest)(nil),     // 2: memory.GetContextRequest
-	(*GetContextResponse)(nil),    // 3: memory.GetContextResponse
-	(*DeleteContextRequest)(nil),  // 4: memory.DeleteContextRequest
-	(*DeleteContextResponse)(nil), // 5: memory.DeleteContextResponse
-	(*UpdateContextRequest)(nil),  // 6: memory.UpdateContextRequest
-	(*UpdateContextResponse)(nil), // 7: memory.UpdateContextResponse
-	(*SaveVectorRequest)(nil),     // 8: memory.SaveVectorRequest
-	(*VectorData)(nil),            // 9: memory.VectorData
-	(*SaveVectorResponse)(nil),    // 10: memory.SaveVectorResponse
-	(*SearchSimilarRequest)(nil),  // 11: memory.SearchSimilarRequest
-	(*SearchSimilarResponse)(nil), // 12: memory.SearchSimilarResponse
-	(*SearchResult)(nil),          // 13: memory.SearchResult
-	(*DeleteVectorRequest)(nil),   // 14: memory.DeleteVectorRequest
-	(*DeleteVectorResponse)(nil),  // 15: memory.DeleteVectorResponse
-	nil,                           // 16: memory.SaveContextRequest.ContextEntry
-	nil,                           // 17: memory.GetContextResponse.ContextEntry
-	nil,                           // 18: memory.UpdateContextRequest.ContextEntry
-	nil,                           // 19: memory.VectorData.MetadataEntry
-	nil,                           // 20: memory.SearchSimilarRequest.FilterEntry
-	nil,                           // 21: memory.SearchResult.MetadataEntry
+var file_memory_service_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
+var file_memory_service_proto_goTypes = []any{
+	(*SaveContextRequest)(nil),         // 0: memory.SaveContextRequest
+	(*SaveContextResponse)(nil),        // 1: memory.SaveContextResponse
+	(*GetContextRequest)(nil),          // 2: memory.GetContextRequest
+	(*GetContextResponse)(nil),         // 3: memory.GetContextResponse
+	(*DeleteContextRequest)(nil),       // 4: memory.DeleteContextRequest
+	(*DeleteContextResponse)(nil),      // 5: memory.DeleteContextResponse
+	(*UpdateContextRequest)(nil),       // 6: memory.UpdateContextRequest
+	(*UpdateContextResponse)(nil),      // 7: memory.UpdateContextResponse
+	(*SaveVectorRequest)(nil),          // 8: memory.SaveVectorRequest
+	(*VectorData)(nil),                 // 9: memory.VectorData
+	(*SaveVectorResponse)(nil),         // 10: memory.SaveVectorResponse
+	(*SearchSimilarRequest)(nil),       // 11: memory.SearchSimilarRequest
+	(*SearchSimilarResponse)(nil),      // 12: memory.SearchSimilarResponse
+	(*SearchResult)(nil),               // 13: memory.SearchResult
+	(*DeleteVectorRequest)(nil),        // 14: memory.DeleteVectorRequest
+	(*DeleteVectorResponse)(nil),       // 15: memory.DeleteVectorResponse
+	(*KnowledgePoint)(nil),             // 16: memory.KnowledgePoint
+	(*SaveKnowledgePointRequest)(nil),  // 17: memory.SaveKnowledgePointRequest
+	(*SaveKnowledgePointResponse)(nil), // 18: memory.SaveKnowledgePointResponse
+	(*GetKnowledgePointsRequest)(nil),  // 19: memory.GetKnowledgePointsRequest
+	(*GetKnowledgePointsResponse)(nil), // 20: memory.GetKnowledgePointsResponse
+	(*GetLearningStatsRequest)(nil),    // 21: memory.GetLearningStatsRequest
+	(*GetLearningStatsResponse)(nil),   // 22: memory.GetLearningStatsResponse
+	nil,                                // 23: memory.SaveContextRequest.ContextEntry
+	nil,                                // 24: memory.GetContextResponse.ContextEntry
+	nil,                                // 25: memory.UpdateContextRequest.ContextEntry
+	nil,                                // 26: memory.VectorData.MetadataEntry
+	nil,                                // 27: memory.SearchSimilarRequest.FilterEntry
+	nil,                                // 28: memory.SearchResult.MetadataEntry
 }
-var file_protos_memory_service_proto_depIdxs = []int32{
-	16, // 0: memory.SaveContextRequest.context:type_name -> memory.SaveContextRequest.ContextEntry
-	17, // 1: memory.GetContextResponse.context:type_name -> memory.GetContextResponse.ContextEntry
-	18, // 2: memory.UpdateContextRequest.context:type_name -> memory.UpdateContextRequest.ContextEntry
+var file_memory_service_proto_depIdxs = []int32{
+	23, // 0: memory.SaveContextRequest.context:type_name -> memory.SaveContextRequest.ContextEntry
+	24, // 1: memory.GetContextResponse.context:type_name -> memory.GetContextResponse.ContextEntry
+	25, // 2: memory.UpdateContextRequest.context:type_name -> memory.UpdateContextRequest.ContextEntry
 	9,  // 3: memory.SaveVectorRequest.vectors:type_name -> memory.VectorData
-	19, // 4: memory.VectorData.metadata:type_name -> memory.VectorData.MetadataEntry
-	20, // 5: memory.SearchSimilarRequest.filter:type_name -> memory.SearchSimilarRequest.FilterEntry
+	26, // 4: memory.VectorData.metadata:type_name -> memory.VectorData.MetadataEntry
+	27, // 5: memory.SearchSimilarRequest.filter:type_name -> memory.SearchSimilarRequest.FilterEntry
 	13, // 6: memory.SearchSimilarResponse.results:type_name -> memory.SearchResult
-	21, // 7: memory.SearchResult.metadata:type_name -> memory.SearchResult.MetadataEntry
-	0,  // 8: memory.MemoryService.SaveContext:input_type -> memory.SaveContextRequest
-	2,  // 9: memory.MemoryService.GetContext:input_type -> memory.GetContextRequest
-	4,  // 10: memory.MemoryService.DeleteContext:input_type -> memory.DeleteContextRequest
-	6,  // 11: memory.MemoryService.UpdateContext:input_type -> memory.UpdateContextRequest
-	8,  // 12: memory.MemoryService.SaveVector:input_type -> memory.SaveVectorRequest
-	11, // 13: memory.MemoryService.SearchSimilar:input_type -> memory.SearchSimilarRequest
-	14, // 14: memory.MemoryService.DeleteVector:input_type -> memory.DeleteVectorRequest
-	1,  // 15: memory.MemoryService.SaveContext:output_type -> memory.SaveContextResponse
-	3,  // 16: memory.MemoryService.GetContext:output_type -> memory.GetContextResponse
-	5,  // 17: memory.MemoryService.DeleteContext:output_type -> memory.DeleteContextResponse
-	7,  // 18: memory.MemoryService.UpdateContext:output_type -> memory.UpdateContextResponse
-	10, // 19: memory.MemoryService.SaveVector:output_type -> memory.SaveVectorResponse
-	12, // 20: memory.MemoryService.SearchSimilar:output_type -> memory.SearchSimilarResponse
-	15, // 21: memory.MemoryService.DeleteVector:output_type -> memory.DeleteVectorResponse
-	15, // [15:22] is the sub-list for method output_type
-	8,  // [8:15] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	28, // 7: memory.SearchResult.metadata:type_name -> memory.SearchResult.MetadataEntry
+	16, // 8: memory.SaveKnowledgePointRequest.point:type_name -> memory.KnowledgePoint
+	16, // 9: memory.GetKnowledgePointsResponse.points:type_name -> memory.KnowledgePoint
+	0,  // 10: memory.MemoryService.SaveContext:input_type -> memory.SaveContextRequest
+	2,  // 11: memory.MemoryService.GetContext:input_type -> memory.GetContextRequest
+	4,  // 12: memory.MemoryService.DeleteContext:input_type -> memory.DeleteContextRequest
+	6,  // 13: memory.MemoryService.UpdateContext:input_type -> memory.UpdateContextRequest
+	8,  // 14: memory.MemoryService.SaveVector:input_type -> memory.SaveVectorRequest
+	11, // 15: memory.MemoryService.SearchSimilar:input_type -> memory.SearchSimilarRequest
+	14, // 16: memory.MemoryService.DeleteVector:input_type -> memory.DeleteVectorRequest
+	17, // 17: memory.MemoryService.SaveKnowledgePoint:input_type -> memory.SaveKnowledgePointRequest
+	19, // 18: memory.MemoryService.GetKnowledgePoints:input_type -> memory.GetKnowledgePointsRequest
+	21, // 19: memory.MemoryService.GetLearningStats:input_type -> memory.GetLearningStatsRequest
+	1,  // 20: memory.MemoryService.SaveContext:output_type -> memory.SaveContextResponse
+	3,  // 21: memory.MemoryService.GetContext:output_type -> memory.GetContextResponse
+	5,  // 22: memory.MemoryService.DeleteContext:output_type -> memory.DeleteContextResponse
+	7,  // 23: memory.MemoryService.UpdateContext:output_type -> memory.UpdateContextResponse
+	10, // 24: memory.MemoryService.SaveVector:output_type -> memory.SaveVectorResponse
+	12, // 25: memory.MemoryService.SearchSimilar:output_type -> memory.SearchSimilarResponse
+	15, // 26: memory.MemoryService.DeleteVector:output_type -> memory.DeleteVectorResponse
+	18, // 27: memory.MemoryService.SaveKnowledgePoint:output_type -> memory.SaveKnowledgePointResponse
+	20, // 28: memory.MemoryService.GetKnowledgePoints:output_type -> memory.GetKnowledgePointsResponse
+	22, // 29: memory.MemoryService.GetLearningStats:output_type -> memory.GetLearningStatsResponse
+	20, // [20:30] is the sub-list for method output_type
+	10, // [10:20] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
-func init() { file_protos_memory_service_proto_init() }
-func file_protos_memory_service_proto_init() {
-	if File_protos_memory_service_proto != nil {
+func init() { file_memory_service_proto_init() }
+func file_memory_service_proto_init() {
+	if File_memory_service_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_protos_memory_service_proto_rawDesc), len(file_protos_memory_service_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_memory_service_proto_rawDesc), len(file_memory_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   22,
+			NumMessages:   29,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_protos_memory_service_proto_goTypes,
-		DependencyIndexes: file_protos_memory_service_proto_depIdxs,
-		MessageInfos:      file_protos_memory_service_proto_msgTypes,
+		GoTypes:           file_memory_service_proto_goTypes,
+		DependencyIndexes: file_memory_service_proto_depIdxs,
+		MessageInfos:      file_memory_service_proto_msgTypes,
 	}.Build()
-	File_protos_memory_service_proto = out.File
-	file_protos_memory_service_proto_goTypes = nil
-	file_protos_memory_service_proto_depIdxs = nil
+	File_memory_service_proto = out.File
+	file_memory_service_proto_goTypes = nil
+	file_memory_service_proto_depIdxs = nil
 }

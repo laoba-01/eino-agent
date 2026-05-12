@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v7.34.1
-// source: protos/core_service.proto
+// source: core_service.proto
 
 package proto
 
@@ -32,7 +32,7 @@ type ChatRequest struct {
 
 func (x *ChatRequest) Reset() {
 	*x = ChatRequest{}
-	mi := &file_protos_core_service_proto_msgTypes[0]
+	mi := &file_core_service_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +44,7 @@ func (x *ChatRequest) String() string {
 func (*ChatRequest) ProtoMessage() {}
 
 func (x *ChatRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_core_service_proto_msgTypes[0]
+	mi := &file_core_service_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +57,7 @@ func (x *ChatRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatRequest.ProtoReflect.Descriptor instead.
 func (*ChatRequest) Descriptor() ([]byte, []int) {
-	return file_protos_core_service_proto_rawDescGZIP(), []int{0}
+	return file_core_service_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *ChatRequest) GetUserId() string {
@@ -92,7 +92,7 @@ type ChatResponse struct {
 
 func (x *ChatResponse) Reset() {
 	*x = ChatResponse{}
-	mi := &file_protos_core_service_proto_msgTypes[1]
+	mi := &file_core_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -104,7 +104,7 @@ func (x *ChatResponse) String() string {
 func (*ChatResponse) ProtoMessage() {}
 
 func (x *ChatResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_core_service_proto_msgTypes[1]
+	mi := &file_core_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -117,7 +117,7 @@ func (x *ChatResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatResponse.ProtoReflect.Descriptor instead.
 func (*ChatResponse) Descriptor() ([]byte, []int) {
-	return file_protos_core_service_proto_rawDescGZIP(), []int{1}
+	return file_core_service_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ChatResponse) GetResponse() string {
@@ -152,7 +152,7 @@ type GetHistoryRequest struct {
 
 func (x *GetHistoryRequest) Reset() {
 	*x = GetHistoryRequest{}
-	mi := &file_protos_core_service_proto_msgTypes[2]
+	mi := &file_core_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -164,7 +164,7 @@ func (x *GetHistoryRequest) String() string {
 func (*GetHistoryRequest) ProtoMessage() {}
 
 func (x *GetHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_core_service_proto_msgTypes[2]
+	mi := &file_core_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -177,7 +177,7 @@ func (x *GetHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_protos_core_service_proto_rawDescGZIP(), []int{2}
+	return file_core_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *GetHistoryRequest) GetUserId() string {
@@ -210,7 +210,7 @@ type GetHistoryResponse struct {
 
 func (x *GetHistoryResponse) Reset() {
 	*x = GetHistoryResponse{}
-	mi := &file_protos_core_service_proto_msgTypes[3]
+	mi := &file_core_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -222,7 +222,7 @@ func (x *GetHistoryResponse) String() string {
 func (*GetHistoryResponse) ProtoMessage() {}
 
 func (x *GetHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_core_service_proto_msgTypes[3]
+	mi := &file_core_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -235,7 +235,7 @@ func (x *GetHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetHistoryResponse.ProtoReflect.Descriptor instead.
 func (*GetHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_protos_core_service_proto_rawDescGZIP(), []int{3}
+	return file_core_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetHistoryResponse) GetMessages() []*ChatMessage {
@@ -258,7 +258,7 @@ type ChatMessage struct {
 
 func (x *ChatMessage) Reset() {
 	*x = ChatMessage{}
-	mi := &file_protos_core_service_proto_msgTypes[4]
+	mi := &file_core_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -270,7 +270,7 @@ func (x *ChatMessage) String() string {
 func (*ChatMessage) ProtoMessage() {}
 
 func (x *ChatMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_core_service_proto_msgTypes[4]
+	mi := &file_core_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -283,7 +283,7 @@ func (x *ChatMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatMessage.ProtoReflect.Descriptor instead.
 func (*ChatMessage) Descriptor() ([]byte, []int) {
-	return file_protos_core_service_proto_rawDescGZIP(), []int{4}
+	return file_core_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ChatMessage) GetId() string {
@@ -321,11 +321,343 @@ func (x *ChatMessage) GetTimestamp() int64 {
 	return 0
 }
 
-var File_protos_core_service_proto protoreflect.FileDescriptor
+type GetLearningReportRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
 
-const file_protos_core_service_proto_rawDesc = "" +
+func (x *GetLearningReportRequest) Reset() {
+	*x = GetLearningReportRequest{}
+	mi := &file_core_service_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLearningReportRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLearningReportRequest) ProtoMessage() {}
+
+func (x *GetLearningReportRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_core_service_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLearningReportRequest.ProtoReflect.Descriptor instead.
+func (*GetLearningReportRequest) Descriptor() ([]byte, []int) {
+	return file_core_service_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetLearningReportRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type GetLearningReportResponse struct {
+	state             protoimpl.MessageState  `protogen:"open.v1"`
+	TotalTopics       int32                   `protobuf:"varint,1,opt,name=total_topics,json=totalTopics,proto3" json:"total_topics,omitempty"`
+	AverageMastery    float64                 `protobuf:"fixed64,2,opt,name=average_mastery,json=averageMastery,proto3" json:"average_mastery,omitempty"`
+	TotalInteractions int32                   `protobuf:"varint,3,opt,name=total_interactions,json=totalInteractions,proto3" json:"total_interactions,omitempty"`
+	MasteredCount     int32                   `protobuf:"varint,4,opt,name=mastered_count,json=masteredCount,proto3" json:"mastered_count,omitempty"`
+	LearningCount     int32                   `protobuf:"varint,5,opt,name=learning_count,json=learningCount,proto3" json:"learning_count,omitempty"`
+	WeakCount         int32                   `protobuf:"varint,6,opt,name=weak_count,json=weakCount,proto3" json:"weak_count,omitempty"`
+	RecentPoints      []*KnowledgePointDetail `protobuf:"bytes,7,rep,name=recent_points,json=recentPoints,proto3" json:"recent_points,omitempty"`
+	WeakPoints        []*KnowledgePointDetail `protobuf:"bytes,8,rep,name=weak_points,json=weakPoints,proto3" json:"weak_points,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *GetLearningReportResponse) Reset() {
+	*x = GetLearningReportResponse{}
+	mi := &file_core_service_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLearningReportResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLearningReportResponse) ProtoMessage() {}
+
+func (x *GetLearningReportResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_core_service_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLearningReportResponse.ProtoReflect.Descriptor instead.
+func (*GetLearningReportResponse) Descriptor() ([]byte, []int) {
+	return file_core_service_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetLearningReportResponse) GetTotalTopics() int32 {
+	if x != nil {
+		return x.TotalTopics
+	}
+	return 0
+}
+
+func (x *GetLearningReportResponse) GetAverageMastery() float64 {
+	if x != nil {
+		return x.AverageMastery
+	}
+	return 0
+}
+
+func (x *GetLearningReportResponse) GetTotalInteractions() int32 {
+	if x != nil {
+		return x.TotalInteractions
+	}
+	return 0
+}
+
+func (x *GetLearningReportResponse) GetMasteredCount() int32 {
+	if x != nil {
+		return x.MasteredCount
+	}
+	return 0
+}
+
+func (x *GetLearningReportResponse) GetLearningCount() int32 {
+	if x != nil {
+		return x.LearningCount
+	}
+	return 0
+}
+
+func (x *GetLearningReportResponse) GetWeakCount() int32 {
+	if x != nil {
+		return x.WeakCount
+	}
+	return 0
+}
+
+func (x *GetLearningReportResponse) GetRecentPoints() []*KnowledgePointDetail {
+	if x != nil {
+		return x.RecentPoints
+	}
+	return nil
+}
+
+func (x *GetLearningReportResponse) GetWeakPoints() []*KnowledgePointDetail {
+	if x != nil {
+		return x.WeakPoints
+	}
+	return nil
+}
+
+type KnowledgePointDetail struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Topic         string                 `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
+	Mastery       float64                `protobuf:"fixed64,2,opt,name=mastery,proto3" json:"mastery,omitempty"`
+	Interactions  int32                  `protobuf:"varint,3,opt,name=interactions,proto3" json:"interactions,omitempty"`
+	LastSeen      int64                  `protobuf:"varint,4,opt,name=last_seen,json=lastSeen,proto3" json:"last_seen,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *KnowledgePointDetail) Reset() {
+	*x = KnowledgePointDetail{}
+	mi := &file_core_service_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KnowledgePointDetail) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KnowledgePointDetail) ProtoMessage() {}
+
+func (x *KnowledgePointDetail) ProtoReflect() protoreflect.Message {
+	mi := &file_core_service_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KnowledgePointDetail.ProtoReflect.Descriptor instead.
+func (*KnowledgePointDetail) Descriptor() ([]byte, []int) {
+	return file_core_service_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *KnowledgePointDetail) GetTopic() string {
+	if x != nil {
+		return x.Topic
+	}
+	return ""
+}
+
+func (x *KnowledgePointDetail) GetMastery() float64 {
+	if x != nil {
+		return x.Mastery
+	}
+	return 0
+}
+
+func (x *KnowledgePointDetail) GetInteractions() int32 {
+	if x != nil {
+		return x.Interactions
+	}
+	return 0
+}
+
+func (x *KnowledgePointDetail) GetLastSeen() int64 {
+	if x != nil {
+		return x.LastSeen
+	}
+	return 0
+}
+
+type GetKnowledgePointsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	SortBy        string                 `protobuf:"bytes,3,opt,name=sort_by,json=sortBy,proto3" json:"sort_by,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetKnowledgePointsRequest) Reset() {
+	*x = GetKnowledgePointsRequest{}
+	mi := &file_core_service_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetKnowledgePointsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetKnowledgePointsRequest) ProtoMessage() {}
+
+func (x *GetKnowledgePointsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_core_service_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetKnowledgePointsRequest.ProtoReflect.Descriptor instead.
+func (*GetKnowledgePointsRequest) Descriptor() ([]byte, []int) {
+	return file_core_service_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GetKnowledgePointsRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *GetKnowledgePointsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetKnowledgePointsRequest) GetSortBy() string {
+	if x != nil {
+		return x.SortBy
+	}
+	return ""
+}
+
+type GetKnowledgePointsResponse struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Success       bool                    `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Error         string                  `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	Points        []*KnowledgePointDetail `protobuf:"bytes,3,rep,name=points,proto3" json:"points,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetKnowledgePointsResponse) Reset() {
+	*x = GetKnowledgePointsResponse{}
+	mi := &file_core_service_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetKnowledgePointsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetKnowledgePointsResponse) ProtoMessage() {}
+
+func (x *GetKnowledgePointsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_core_service_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetKnowledgePointsResponse.ProtoReflect.Descriptor instead.
+func (*GetKnowledgePointsResponse) Descriptor() ([]byte, []int) {
+	return file_core_service_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *GetKnowledgePointsResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *GetKnowledgePointsResponse) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+func (x *GetKnowledgePointsResponse) GetPoints() []*KnowledgePointDetail {
+	if x != nil {
+		return x.Points
+	}
+	return nil
+}
+
+var File_core_service_proto protoreflect.FileDescriptor
+
+const file_core_service_proto_rawDesc = "" +
 	"\n" +
-	"\x19protos/core_service.proto\x12\x04core\"\xb6\x01\n" +
+	"\x12core_service.proto\x12\x04core\"\xb6\x01\n" +
 	"\vChatRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x128\n" +
@@ -352,69 +684,109 @@ const file_protos_core_service_proto_rawDesc = "" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x12\n" +
 	"\x04role\x18\x03 \x01(\tR\x04role\x12\x18\n" +
 	"\acontent\x18\x04 \x01(\tR\acontent\x12\x1c\n" +
-	"\ttimestamp\x18\x05 \x01(\x03R\ttimestamp2}\n" +
+	"\ttimestamp\x18\x05 \x01(\x03R\ttimestamp\"3\n" +
+	"\x18GetLearningReportRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"\x81\x03\n" +
+	"\x19GetLearningReportResponse\x12!\n" +
+	"\ftotal_topics\x18\x01 \x01(\x05R\vtotalTopics\x12'\n" +
+	"\x0faverage_mastery\x18\x02 \x01(\x01R\x0eaverageMastery\x12-\n" +
+	"\x12total_interactions\x18\x03 \x01(\x05R\x11totalInteractions\x12%\n" +
+	"\x0emastered_count\x18\x04 \x01(\x05R\rmasteredCount\x12%\n" +
+	"\x0elearning_count\x18\x05 \x01(\x05R\rlearningCount\x12\x1d\n" +
+	"\n" +
+	"weak_count\x18\x06 \x01(\x05R\tweakCount\x12?\n" +
+	"\rrecent_points\x18\a \x03(\v2\x1a.core.KnowledgePointDetailR\frecentPoints\x12;\n" +
+	"\vweak_points\x18\b \x03(\v2\x1a.core.KnowledgePointDetailR\n" +
+	"weakPoints\"\x87\x01\n" +
+	"\x14KnowledgePointDetail\x12\x14\n" +
+	"\x05topic\x18\x01 \x01(\tR\x05topic\x12\x18\n" +
+	"\amastery\x18\x02 \x01(\x01R\amastery\x12\"\n" +
+	"\finteractions\x18\x03 \x01(\x05R\finteractions\x12\x1b\n" +
+	"\tlast_seen\x18\x04 \x01(\x03R\blastSeen\"c\n" +
+	"\x19GetKnowledgePointsRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x17\n" +
+	"\asort_by\x18\x03 \x01(\tR\x06sortBy\"\x80\x01\n" +
+	"\x1aGetKnowledgePointsResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x14\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error\x122\n" +
+	"\x06points\x18\x03 \x03(\v2\x1a.core.KnowledgePointDetailR\x06points2\xac\x02\n" +
 	"\vCoreService\x12-\n" +
 	"\x04Chat\x12\x11.core.ChatRequest\x1a\x12.core.ChatResponse\x12?\n" +
 	"\n" +
-	"GetHistory\x12\x17.core.GetHistoryRequest\x1a\x18.core.GetHistoryResponseB\tZ\a./protob\x06proto3"
+	"GetHistory\x12\x17.core.GetHistoryRequest\x1a\x18.core.GetHistoryResponse\x12T\n" +
+	"\x11GetLearningReport\x12\x1e.core.GetLearningReportRequest\x1a\x1f.core.GetLearningReportResponse\x12W\n" +
+	"\x12GetKnowledgePoints\x12\x1f.core.GetKnowledgePointsRequest\x1a .core.GetKnowledgePointsResponseB\tZ\a./protob\x06proto3"
 
 var (
-	file_protos_core_service_proto_rawDescOnce sync.Once
-	file_protos_core_service_proto_rawDescData []byte
+	file_core_service_proto_rawDescOnce sync.Once
+	file_core_service_proto_rawDescData []byte
 )
 
-func file_protos_core_service_proto_rawDescGZIP() []byte {
-	file_protos_core_service_proto_rawDescOnce.Do(func() {
-		file_protos_core_service_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_protos_core_service_proto_rawDesc), len(file_protos_core_service_proto_rawDesc)))
+func file_core_service_proto_rawDescGZIP() []byte {
+	file_core_service_proto_rawDescOnce.Do(func() {
+		file_core_service_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_core_service_proto_rawDesc), len(file_core_service_proto_rawDesc)))
 	})
-	return file_protos_core_service_proto_rawDescData
+	return file_core_service_proto_rawDescData
 }
 
-var file_protos_core_service_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
-var file_protos_core_service_proto_goTypes = []any{
-	(*ChatRequest)(nil),        // 0: core.ChatRequest
-	(*ChatResponse)(nil),       // 1: core.ChatResponse
-	(*GetHistoryRequest)(nil),  // 2: core.GetHistoryRequest
-	(*GetHistoryResponse)(nil), // 3: core.GetHistoryResponse
-	(*ChatMessage)(nil),        // 4: core.ChatMessage
-	nil,                        // 5: core.ChatRequest.ContextEntry
-	nil,                        // 6: core.ChatResponse.ContextEntry
+var file_core_service_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_core_service_proto_goTypes = []any{
+	(*ChatRequest)(nil),                // 0: core.ChatRequest
+	(*ChatResponse)(nil),               // 1: core.ChatResponse
+	(*GetHistoryRequest)(nil),          // 2: core.GetHistoryRequest
+	(*GetHistoryResponse)(nil),         // 3: core.GetHistoryResponse
+	(*ChatMessage)(nil),                // 4: core.ChatMessage
+	(*GetLearningReportRequest)(nil),   // 5: core.GetLearningReportRequest
+	(*GetLearningReportResponse)(nil),  // 6: core.GetLearningReportResponse
+	(*KnowledgePointDetail)(nil),       // 7: core.KnowledgePointDetail
+	(*GetKnowledgePointsRequest)(nil),  // 8: core.GetKnowledgePointsRequest
+	(*GetKnowledgePointsResponse)(nil), // 9: core.GetKnowledgePointsResponse
+	nil,                                // 10: core.ChatRequest.ContextEntry
+	nil,                                // 11: core.ChatResponse.ContextEntry
 }
-var file_protos_core_service_proto_depIdxs = []int32{
-	5, // 0: core.ChatRequest.context:type_name -> core.ChatRequest.ContextEntry
-	6, // 1: core.ChatResponse.context:type_name -> core.ChatResponse.ContextEntry
-	4, // 2: core.GetHistoryResponse.messages:type_name -> core.ChatMessage
-	0, // 3: core.CoreService.Chat:input_type -> core.ChatRequest
-	2, // 4: core.CoreService.GetHistory:input_type -> core.GetHistoryRequest
-	1, // 5: core.CoreService.Chat:output_type -> core.ChatResponse
-	3, // 6: core.CoreService.GetHistory:output_type -> core.GetHistoryResponse
-	5, // [5:7] is the sub-list for method output_type
-	3, // [3:5] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+var file_core_service_proto_depIdxs = []int32{
+	10, // 0: core.ChatRequest.context:type_name -> core.ChatRequest.ContextEntry
+	11, // 1: core.ChatResponse.context:type_name -> core.ChatResponse.ContextEntry
+	4,  // 2: core.GetHistoryResponse.messages:type_name -> core.ChatMessage
+	7,  // 3: core.GetLearningReportResponse.recent_points:type_name -> core.KnowledgePointDetail
+	7,  // 4: core.GetLearningReportResponse.weak_points:type_name -> core.KnowledgePointDetail
+	7,  // 5: core.GetKnowledgePointsResponse.points:type_name -> core.KnowledgePointDetail
+	0,  // 6: core.CoreService.Chat:input_type -> core.ChatRequest
+	2,  // 7: core.CoreService.GetHistory:input_type -> core.GetHistoryRequest
+	5,  // 8: core.CoreService.GetLearningReport:input_type -> core.GetLearningReportRequest
+	8,  // 9: core.CoreService.GetKnowledgePoints:input_type -> core.GetKnowledgePointsRequest
+	1,  // 10: core.CoreService.Chat:output_type -> core.ChatResponse
+	3,  // 11: core.CoreService.GetHistory:output_type -> core.GetHistoryResponse
+	6,  // 12: core.CoreService.GetLearningReport:output_type -> core.GetLearningReportResponse
+	9,  // 13: core.CoreService.GetKnowledgePoints:output_type -> core.GetKnowledgePointsResponse
+	10, // [10:14] is the sub-list for method output_type
+	6,  // [6:10] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
-func init() { file_protos_core_service_proto_init() }
-func file_protos_core_service_proto_init() {
-	if File_protos_core_service_proto != nil {
+func init() { file_core_service_proto_init() }
+func file_core_service_proto_init() {
+	if File_core_service_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_protos_core_service_proto_rawDesc), len(file_protos_core_service_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_core_service_proto_rawDesc), len(file_core_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_protos_core_service_proto_goTypes,
-		DependencyIndexes: file_protos_core_service_proto_depIdxs,
-		MessageInfos:      file_protos_core_service_proto_msgTypes,
+		GoTypes:           file_core_service_proto_goTypes,
+		DependencyIndexes: file_core_service_proto_depIdxs,
+		MessageInfos:      file_core_service_proto_msgTypes,
 	}.Build()
-	File_protos_core_service_proto = out.File
-	file_protos_core_service_proto_goTypes = nil
-	file_protos_core_service_proto_depIdxs = nil
+	File_core_service_proto = out.File
+	file_core_service_proto_goTypes = nil
+	file_core_service_proto_depIdxs = nil
 }

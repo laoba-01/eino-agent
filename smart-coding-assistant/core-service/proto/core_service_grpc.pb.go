@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.1
 // - protoc             v7.34.1
-// source: protos/core_service.proto
+// source: core_service.proto
 
 package proto
 
@@ -19,8 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CoreService_Chat_FullMethodName       = "/core.CoreService/Chat"
-	CoreService_GetHistory_FullMethodName = "/core.CoreService/GetHistory"
+	CoreService_Chat_FullMethodName               = "/core.CoreService/Chat"
+	CoreService_GetHistory_FullMethodName         = "/core.CoreService/GetHistory"
+	CoreService_GetLearningReport_FullMethodName  = "/core.CoreService/GetLearningReport"
+	CoreService_GetKnowledgePoints_FullMethodName = "/core.CoreService/GetKnowledgePoints"
 )
 
 // CoreServiceClient is the client API for CoreService service.
@@ -29,6 +31,8 @@ const (
 type CoreServiceClient interface {
 	Chat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatResponse, error)
 	GetHistory(ctx context.Context, in *GetHistoryRequest, opts ...grpc.CallOption) (*GetHistoryResponse, error)
+	GetLearningReport(ctx context.Context, in *GetLearningReportRequest, opts ...grpc.CallOption) (*GetLearningReportResponse, error)
+	GetKnowledgePoints(ctx context.Context, in *GetKnowledgePointsRequest, opts ...grpc.CallOption) (*GetKnowledgePointsResponse, error)
 }
 
 type coreServiceClient struct {
@@ -59,12 +63,34 @@ func (c *coreServiceClient) GetHistory(ctx context.Context, in *GetHistoryReques
 	return out, nil
 }
 
+func (c *coreServiceClient) GetLearningReport(ctx context.Context, in *GetLearningReportRequest, opts ...grpc.CallOption) (*GetLearningReportResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLearningReportResponse)
+	err := c.cc.Invoke(ctx, CoreService_GetLearningReport_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coreServiceClient) GetKnowledgePoints(ctx context.Context, in *GetKnowledgePointsRequest, opts ...grpc.CallOption) (*GetKnowledgePointsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetKnowledgePointsResponse)
+	err := c.cc.Invoke(ctx, CoreService_GetKnowledgePoints_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CoreServiceServer is the server API for CoreService service.
 // All implementations must embed UnimplementedCoreServiceServer
 // for forward compatibility.
 type CoreServiceServer interface {
 	Chat(context.Context, *ChatRequest) (*ChatResponse, error)
 	GetHistory(context.Context, *GetHistoryRequest) (*GetHistoryResponse, error)
+	GetLearningReport(context.Context, *GetLearningReportRequest) (*GetLearningReportResponse, error)
+	GetKnowledgePoints(context.Context, *GetKnowledgePointsRequest) (*GetKnowledgePointsResponse, error)
 	mustEmbedUnimplementedCoreServiceServer()
 }
 
@@ -80,6 +106,12 @@ func (UnimplementedCoreServiceServer) Chat(context.Context, *ChatRequest) (*Chat
 }
 func (UnimplementedCoreServiceServer) GetHistory(context.Context, *GetHistoryRequest) (*GetHistoryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetHistory not implemented")
+}
+func (UnimplementedCoreServiceServer) GetLearningReport(context.Context, *GetLearningReportRequest) (*GetLearningReportResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetLearningReport not implemented")
+}
+func (UnimplementedCoreServiceServer) GetKnowledgePoints(context.Context, *GetKnowledgePointsRequest) (*GetKnowledgePointsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetKnowledgePoints not implemented")
 }
 func (UnimplementedCoreServiceServer) mustEmbedUnimplementedCoreServiceServer() {}
 func (UnimplementedCoreServiceServer) testEmbeddedByValue()                     {}
@@ -138,6 +170,42 @@ func _CoreService_GetHistory_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CoreService_GetLearningReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLearningReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoreServiceServer).GetLearningReport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CoreService_GetLearningReport_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoreServiceServer).GetLearningReport(ctx, req.(*GetLearningReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CoreService_GetKnowledgePoints_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetKnowledgePointsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoreServiceServer).GetKnowledgePoints(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CoreService_GetKnowledgePoints_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoreServiceServer).GetKnowledgePoints(ctx, req.(*GetKnowledgePointsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CoreService_ServiceDesc is the grpc.ServiceDesc for CoreService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -153,7 +221,15 @@ var CoreService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "GetHistory",
 			Handler:    _CoreService_GetHistory_Handler,
 		},
+		{
+			MethodName: "GetLearningReport",
+			Handler:    _CoreService_GetLearningReport_Handler,
+		},
+		{
+			MethodName: "GetKnowledgePoints",
+			Handler:    _CoreService_GetKnowledgePoints_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "protos/core_service.proto",
+	Metadata: "core_service.proto",
 }

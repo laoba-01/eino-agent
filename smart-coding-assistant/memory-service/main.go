@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sort"
 	"time"
 
 	"eino/memory-service/proto"
@@ -299,7 +300,6 @@ func (s *MemoryServiceServer) SearchSimilar(ctx context.Context, req *proto.Sear
 
 	results := make([]*proto.SearchResult, 0)
 	if len(searchRes) > 0 {
-		// Find metadata column from Fields
 		var metaCol *entity.ColumnJSONBytes
 		for _, col := range searchRes[0].Fields {
 			if col.Name() == metadataField {
@@ -353,6 +353,248 @@ func (s *MemoryServiceServer) DeleteVector(ctx context.Context, req *proto.Delet
 	return &proto.DeleteVectorResponse{Success: true}, nil
 }
 
+// --- Knowledge point tracking (Redis) ---
+
+type knowledgePointJSON struct {
+	Topic       string  `json:"topic"`
+	Mastery     float64 `json:"mastery"`
+	Interactions int32  `json:"interactions"`
+	LastSeen    int64   `json:"last_seen"`
+	FirstSeen   int64   `json:"first_seen"`
+}
+
+func (s *MemoryServiceServer) SaveKnowledgePoint(ctx context.Context, req *proto.SaveKnowledgePointRequest) (*proto.SaveKnowledgePointResponse, error) {
+	if s.rdb == nil {
+		return &proto.SaveKnowledgePointResponse{Success: false, Error: "redis not connected"}, nil
+	}
+
+	key := fmt.Sprintf("learning:%s", req.UserId)
+	topic := req.Point.Topic
+	now := time.Now().Unix()
+
+	if req.Merge {
+		existing, err := s.rdb.HGet(ctx, key, topic).Result()
+		if err == nil && existing != "" {
+			var kp knowledgePointJSON
+			if json.Unmarshal([]byte(existing), &kp) == nil {
+				delta := req.Point.Mastery
+				if delta < 0.05 {
+					delta = 0.05
+				} else if delta > 0.3 {
+					delta = 0.3
+				}
+				newMastery := kp.Mastery*0.8 + (kp.Mastery+delta)*0.2
+				if newMastery > 1.0 {
+					newMastery = 1.0
+				}
+				if newMastery < 0 {
+					newMastery = 0
+				}
+
+				kp.Mastery = newMastery
+				kp.Interactions++
+				kp.LastSeen = now
+			}
+
+			data, err := json.Marshal(kp)
+			if err != nil {
+				return &proto.SaveKnowledgePointResponse{Success: false, Error: err.Error()}, nil
+			}
+			if err := s.rdb.HSet(ctx, key, topic, data).Err(); err != nil {
+				return &proto.SaveKnowledgePointResponse{Success: false, Error: err.Error()}, nil
+			}
+		} else {
+			kp := knowledgePointJSON{
+				Topic:       topic,
+				Mastery:     clampMastery(req.Point.Mastery),
+				Interactions: 1,
+				LastSeen:    now,
+				FirstSeen:   now,
+			}
+			data, err := json.Marshal(kp)
+			if err != nil {
+				return &proto.SaveKnowledgePointResponse{Success: false, Error: err.Error()}, nil
+			}
+			if err := s.rdb.HSet(ctx, key, topic, data).Err(); err != nil {
+				return &proto.SaveKnowledgePointResponse{Success: false, Error: err.Error()}, nil
+			}
+
+			statsKey := fmt.Sprintf("learning_stats:%s", req.UserId)
+			s.rdb.HSet(ctx, statsKey, "study_start_date", now)
+		}
+	} else {
+		kp := knowledgePointJSON{
+			Topic:       topic,
+			Mastery:     clampMastery(req.Point.Mastery),
+			Interactions: req.Point.Interactions,
+			LastSeen:    now,
+			FirstSeen:   req.Point.FirstSeen,
+		}
+		if kp.FirstSeen == 0 {
+			kp.FirstSeen = now
+		}
+		data, err := json.Marshal(kp)
+		if err != nil {
+			return &proto.SaveKnowledgePointResponse{Success: false, Error: err.Error()}, nil
+		}
+		if err := s.rdb.HSet(ctx, key, topic, data).Err(); err != nil {
+			return &proto.SaveKnowledgePointResponse{Success: false, Error: err.Error()}, nil
+		}
+	}
+
+	if err := s.updateLearningStats(ctx, req.UserId); err != nil {
+		log.Printf("Warning: failed to update learning stats: %v", err)
+	}
+
+	return &proto.SaveKnowledgePointResponse{Success: true, Topic: topic}, nil
+}
+
+func (s *MemoryServiceServer) GetKnowledgePoints(ctx context.Context, req *proto.GetKnowledgePointsRequest) (*proto.GetKnowledgePointsResponse, error) {
+	if s.rdb == nil {
+		return &proto.GetKnowledgePointsResponse{Success: false, Error: "redis not connected"}, nil
+	}
+
+	key := fmt.Sprintf("learning:%s", req.UserId)
+	all, err := s.rdb.HGetAll(ctx, key).Result()
+	if err != nil {
+		return &proto.GetKnowledgePointsResponse{Success: false, Error: err.Error()}, nil
+	}
+
+	points := make([]*proto.KnowledgePoint, 0, len(all))
+	for _, v := range all {
+		var kp knowledgePointJSON
+		if json.Unmarshal([]byte(v), &kp) == nil {
+			points = append(points, &proto.KnowledgePoint{
+				Topic:       kp.Topic,
+				Mastery:     kp.Mastery,
+				Interactions: kp.Interactions,
+				LastSeen:    kp.LastSeen,
+				FirstSeen:   kp.FirstSeen,
+			})
+		}
+	}
+
+	sortBy := req.SortBy
+	if sortBy == "" {
+		sortBy = "last_seen"
+	}
+	sort.Slice(points, func(i, j int) bool {
+		switch sortBy {
+		case "mastery":
+			return points[i].Mastery < points[j].Mastery
+		case "interactions":
+			return points[i].Interactions > points[j].Interactions
+		case "last_seen":
+			return points[i].LastSeen > points[j].LastSeen
+		default:
+			return points[i].LastSeen > points[j].LastSeen
+		}
+	})
+
+	if req.Limit > 0 && int(req.Limit) < len(points) {
+		points = points[:req.Limit]
+	}
+
+	return &proto.GetKnowledgePointsResponse{Success: true, Points: points}, nil
+}
+
+func (s *MemoryServiceServer) GetLearningStats(ctx context.Context, req *proto.GetLearningStatsRequest) (*proto.GetLearningStatsResponse, error) {
+	if s.rdb == nil {
+		return &proto.GetLearningStatsResponse{Success: false, Error: "redis not connected"}, nil
+	}
+
+	statsKey := fmt.Sprintf("learning_stats:%s", req.UserId)
+	cached, err := s.rdb.HGetAll(ctx, statsKey).Result()
+	if err != nil {
+		return &proto.GetLearningStatsResponse{Success: false, Error: err.Error()}, nil
+	}
+
+	if len(cached) > 0 {
+		return &proto.GetLearningStatsResponse{
+			Success:          true,
+			TotalTopics:      parseInt(cached["total_topics"]),
+			AverageMastery:   parseFloat(cached["average_mastery"]),
+			TotalInteractions: parseInt(cached["total_interactions"]),
+			MasteredCount:    parseInt(cached["mastered_count"]),
+			LearningCount:    parseInt(cached["learning_count"]),
+			WeakCount:        parseInt(cached["weak_count"]),
+			StudyStartDate:   parseInt64(cached["study_start_date"]),
+		}, nil
+	}
+
+	if err := s.updateLearningStats(ctx, req.UserId); err != nil {
+		return &proto.GetLearningStatsResponse{Success: false, Error: err.Error()}, nil
+	}
+
+	cached, err = s.rdb.HGetAll(ctx, statsKey).Result()
+	if err != nil || len(cached) == 0 {
+		return &proto.GetLearningStatsResponse{Success: true}, nil
+	}
+
+	return &proto.GetLearningStatsResponse{
+		Success:          true,
+		TotalTopics:      parseInt(cached["total_topics"]),
+		AverageMastery:   parseFloat(cached["average_mastery"]),
+		TotalInteractions: parseInt(cached["total_interactions"]),
+		MasteredCount:    parseInt(cached["mastered_count"]),
+		LearningCount:    parseInt(cached["learning_count"]),
+		WeakCount:        parseInt(cached["weak_count"]),
+		StudyStartDate:   parseInt64(cached["study_start_date"]),
+	}, nil
+}
+
+func (s *MemoryServiceServer) updateLearningStats(ctx context.Context, userID string) error {
+	key := fmt.Sprintf("learning:%s", userID)
+	all, err := s.rdb.HGetAll(ctx, key).Result()
+	if err != nil {
+		return err
+	}
+
+	var totalMastery float64
+	var totalInteractions int32
+	var mastered, learning, weak int32
+	var studyStartDate int64
+
+	for _, v := range all {
+		var kp knowledgePointJSON
+		if json.Unmarshal([]byte(v), &kp) != nil {
+			continue
+		}
+		totalMastery += kp.Mastery
+		totalInteractions += kp.Interactions
+		if kp.Mastery >= 0.8 {
+			mastered++
+		} else if kp.Mastery >= 0.3 {
+			learning++
+		} else {
+			weak++
+		}
+		if studyStartDate == 0 || kp.FirstSeen < studyStartDate {
+			studyStartDate = kp.FirstSeen
+		}
+	}
+
+	totalTopics := int32(len(all))
+	var avgMastery float64
+	if totalTopics > 0 {
+		avgMastery = totalMastery / float64(totalTopics)
+	}
+
+	statsKey := fmt.Sprintf("learning_stats:%s", userID)
+	pipe := s.rdb.Pipeline()
+	pipe.HSet(ctx, statsKey,
+		"total_topics", totalTopics,
+		"average_mastery", fmt.Sprintf("%.4f", avgMastery),
+		"total_interactions", totalInteractions,
+		"mastered_count", mastered,
+		"learning_count", learning,
+		"weak_count", weak,
+		"study_start_date", studyStartDate,
+	)
+	_, err = pipe.Exec(ctx)
+	return err
+}
+
 // --- Helpers ---
 
 func mapToInterface(m map[string]string) []interface{} {
@@ -390,6 +632,34 @@ func joinInt64s(ids []int64) string {
 		s += fmt.Sprintf("%d", id)
 	}
 	return s
+}
+
+func clampMastery(m float64) float64 {
+	if m < 0 {
+		return 0
+	}
+	if m > 1 {
+		return 1
+	}
+	return m
+}
+
+func parseInt(s string) int32 {
+	var v int32
+	fmt.Sscanf(s, "%d", &v)
+	return v
+}
+
+func parseInt64(s string) int64 {
+	var v int64
+	fmt.Sscanf(s, "%d", &v)
+	return v
+}
+
+func parseFloat(s string) float64 {
+	var v float64
+	fmt.Sscanf(s, "%f", &v)
+	return v
 }
 
 func main() {

@@ -15,6 +15,11 @@ service MemoryService {
   rpc SaveVector(SaveVectorRequest) returns (SaveVectorResponse);
   rpc SearchSimilar(SearchSimilarRequest) returns (SearchSimilarResponse);
   rpc DeleteVector(DeleteVectorRequest) returns (DeleteVectorResponse);
+
+  // Knowledge point tracking
+  rpc SaveKnowledgePoint(SaveKnowledgePointRequest) returns (SaveKnowledgePointResponse);
+  rpc GetKnowledgePoints(GetKnowledgePointsRequest) returns (GetKnowledgePointsResponse);
+  rpc GetLearningStats(GetLearningStatsRequest) returns (GetLearningStatsResponse);
 }
 
 // --- Key-value context messages ---
@@ -109,4 +114,54 @@ message DeleteVectorRequest {
 message DeleteVectorResponse {
   bool success = 1;
   string error = 2;
+}
+
+// --- Knowledge point messages ---
+
+message KnowledgePoint {
+  string topic = 1;
+  double mastery = 2;         // 0-1 mastery level
+  int32 interactions = 3;     // Number of interactions
+  int64 last_seen = 4;        // Last seen timestamp
+  int64 first_seen = 5;       // First seen timestamp
+}
+
+message SaveKnowledgePointRequest {
+  string user_id = 1;
+  KnowledgePoint point = 2;
+  bool merge = 3;             // true=merge into existing, false=overwrite
+}
+
+message SaveKnowledgePointResponse {
+  bool success = 1;
+  string error = 2;
+  string topic = 3;           // Final stored topic name
+}
+
+message GetKnowledgePointsRequest {
+  string user_id = 1;
+  int32 limit = 2;            // 0=return all
+  string sort_by = 3;         // "mastery"/"interactions"/"last_seen"
+}
+
+message GetKnowledgePointsResponse {
+  bool success = 1;
+  string error = 2;
+  repeated KnowledgePoint points = 3;
+}
+
+message GetLearningStatsRequest {
+  string user_id = 1;
+}
+
+message GetLearningStatsResponse {
+  bool success = 1;
+  string error = 2;
+  int32 total_topics = 3;
+  double average_mastery = 4;
+  int32 total_interactions = 5;
+  int32 mastered_count = 6;     // mastery >= 0.8
+  int32 learning_count = 7;     // 0.3 <= mastery < 0.8
+  int32 weak_count = 8;         // mastery < 0.3
+  int64 study_start_date = 9;
 }
