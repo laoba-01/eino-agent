@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>智能编程学习助手 Agent</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -142,6 +145,95 @@
             border: 1px solid #e0e0e0;
             border-bottom-left-radius: 4px;
         }
+        /* Markdown 内容样式 */
+        .message-bubble h2 { font-size: 1.2em; margin: 16px 0 8px; color: #1a1a1a; border-bottom: 2px solid #667eea; padding-bottom: 4px; }
+        .message-bubble h3 { font-size: 1.05em; margin: 14px 0 6px; color: #333; }
+        .message-bubble h4 { font-size: 0.95em; margin: 10px 0 5px; color: #555; }
+        .message-bubble p { margin: 8px 0; line-height: 1.7; }
+        .message-bubble ul, .message-bubble ol { margin: 8px 0; padding-left: 24px; }
+        .message-bubble li { margin: 4px 0; line-height: 1.6; }
+        .message-bubble strong { color: #1a1a1a; font-weight: 600; }
+        .message-bubble blockquote {
+            border-left: 4px solid #667eea;
+            margin: 10px 0;
+            padding: 8px 16px;
+            background: #f0f3ff;
+            border-radius: 0 8px 8px 0;
+            color: #555;
+        }
+        .message-bubble table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+        .message-bubble th, .message-bubble td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .message-bubble th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+        .message-bubble tr:nth-child(even) { background: #f9f9f9; }
+        .message-bubble hr { border: none; border-top: 1px solid #e0e0e0; margin: 16px 0; }
+        .message-bubble a { color: #667eea; text-decoration: underline; }
+        /* 代码块容器 */
+        .code-block-wrapper {
+            position: relative;
+            margin: 12px 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .code-block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 12px;
+            background: #2d333b;
+            color: #adbac7;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        .copy-btn {
+            padding: 3px 10px;
+            background: #444c56;
+            color: #adbac7;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { background: #545d68; color: white; }
+        .copy-btn.copied { background: #347d39; color: white; }
+        .message-bubble pre {
+            margin: 0;
+            padding: 12px 16px;
+            background: #1a1e24;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .message-bubble pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 13px;
+        }
+        .message-bubble code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #d63384;
+        }
+        .message-bubble pre code {
+            background: transparent;
+            padding: 0;
+            color: #adbac7;
+        }
         .input-area {
             display: flex;
             padding: 15px;
@@ -259,6 +351,50 @@
     <script>
         const API_BASE = 'http://localhost:8080';
 
+        // 配置 marked + highlight.js
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    try {
+                        return hljs.highlight(code, { language: lang }).value;
+                    } catch (e) {}
+                }
+                return hljs.highlightAuto(code).value;
+            }
+        });
+
+        // 为代码块添加复制按钮
+        function enhanceCodeBlocks(container) {
+            container.querySelectorAll('pre').forEach(pre => {
+                if (pre.parentElement.classList.contains('code-block-wrapper')) return;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'code-block-wrapper';
+                const header = document.createElement('div');
+                header.className = 'code-block-header';
+                const lang = pre.querySelector('code')?.className?.replace('language-','') || 'code';
+                header.innerHTML = `<span>${lang}</span>`;
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn';
+                copyBtn.textContent = '复制';
+                copyBtn.onclick = function() {
+                    navigator.clipboard.writeText(pre.textContent).then(() => {
+                        copyBtn.textContent = '已复制';
+                        copyBtn.classList.add('copied');
+                        setTimeout(() => {
+                            copyBtn.textContent = '复制';
+                            copyBtn.classList.remove('copied');
+                        }, 2000);
+                    });
+                };
+                header.appendChild(copyBtn);
+                pre.parentNode.insertBefore(wrapper, pre);
+                wrapper.appendChild(header);
+                wrapper.appendChild(pre);
+            });
+        }
+
         // 检查登录状态
         window.addEventListener('load', () => {
             const token = localStorage.getItem('token');
@@ -314,7 +450,12 @@
 
             const bubbleDiv = document.createElement('div');
             bubbleDiv.className = 'message-bubble';
-            bubbleDiv.textContent = content;
+            if (role === 'assistant') {
+                bubbleDiv.innerHTML = marked.parse(content);
+                enhanceCodeBlocks(bubbleDiv);
+            } else {
+                bubbleDiv.textContent = content;
+            }
 
             messageDiv.appendChild(bubbleDiv);
             chatHistory.appendChild(messageDiv);
