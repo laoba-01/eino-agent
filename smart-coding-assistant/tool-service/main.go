@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 
 	"eino/tool-service/proto"
 
@@ -41,7 +42,12 @@ func (s *ToolServiceServer) GenerateProblemSolution(ctx context.Context, req *pr
 }
 
 func main() {
-	lis, err := net.Listen("tcp", ":50052")
+	port := os.Getenv("TOOL_SERVICE_PORT")
+	if port == "" {
+		port = "50052"
+	}
+
+	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -49,7 +55,7 @@ func main() {
 	s := grpc.NewServer()
 	proto.RegisterToolServiceServer(s, &ToolServiceServer{})
 
-	fmt.Println("Tool Service listening on port 50052...")
+	fmt.Println("Tool Service listening on port " + port + "...")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}

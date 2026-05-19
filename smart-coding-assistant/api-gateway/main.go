@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -16,9 +17,18 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const (
-	authServiceAddr = "localhost:50054"
-	coreServiceAddr = "localhost:50051"
+func getEnv(key, defaultVal string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return defaultVal
+}
+
+var (
+	authServiceAddr = getEnv("AUTH_SERVICE_ADDR", "localhost:50054")
+	coreServiceAddr = getEnv("CORE_SERVICE_ADDR", "localhost:50051")
+	frontendDir     = getEnv("FRONTEND_DIR", "d:/agent/smart-coding-assistant/frontend")
+	gatewayPort     = getEnv("GATEWAY_PORT", "8080")
 )
 
 type ChatRequest struct {
@@ -419,18 +429,17 @@ func main() {
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" {
-			http.ServeFile(w, r, "d:/agent/smart-coding-assistant/frontend/index.html")
+			http.ServeFile(w, r, frontendDir+"/index.html")
 			return
 		}
-		filePath := "d:/agent/smart-coding-assistant/frontend" + r.URL.Path
+		filePath := frontendDir + r.URL.Path
 		http.ServeFile(w, r, filePath)
 	})
 
 	handler := corsMiddleware(mux)
 
-	port := "8080"
-	fmt.Printf("API Gateway listening on port %s...\n", port)
-	if err := http.ListenAndServe(":"+port, handler); err != nil {
+	fmt.Printf("API Gateway listening on port %s...\n", gatewayPort)
+	if err := http.ListenAndServe(":"+gatewayPort, handler); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
 }

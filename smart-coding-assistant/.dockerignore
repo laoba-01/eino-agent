@@ -1,0 +1,29 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Docs
+docs
+*.md
+*.txt
+
+# Test scripts
+test_*.sh
+
+# Environment (should be passed via docker-compose)
+.env
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Binary artifacts
+*.exe
+*.out

@@ -1,0 +1,171 @@
+services:
+  # ==================== 基础设施 ====================
+  redis:
+    image: redis:7-alpine
+    container_name: sca-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    container_name: sca-etcd
+    restart: unless-stopped
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    volumes:
+      - etcd-data:/etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    container_name: sca-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    command: minio server /minio_data --console-address ":9001"
+    volumes:
+      - minio-data:/minio_data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  milvus:
+    image: milvusdb/milvus:v2.4.15
+    container_name: sca-milvus
+    restart: unless-stopped
+    depends_on:
+      etcd:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+      MINIO_ACCESS_KEY_ID: minioadmin
+      MINIO_SECRET_ACCESS_KEY: minioadmin
+    command: milvus run standalone
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    volumes:
+      - milvus-data:/var/lib/milvus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  # ==================== 业务服务 ====================
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: auth-service
+    container_name: sca-auth
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_ADDR=redis:6379
+      - AUTH_SERVICE_PORT=50054
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+    ports:
+      - "50054:50054"
+
+  memory-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: memory-service
+    container_name: sca-memory
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_ADDR=redis:6379
+      - MILVUS_ADDR=milvus:19530
+      - MEMORY_SERVICE_PORT=50053
+    ports:
+      - "50053:50053"
+
+  core-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: core-service
+    container_name: sca-core
+    restart: unless-stopped
+    depends_on:
+      - memory-service
+    environment:
+      - MEMORY_SERVICE_ADDR=memory-service:50053
+      - CORE_SERVICE_PORT=50051
+      - GLM_API_KEY=${GLM_API_KEY}
+      - GLM_API_URL=${GLM_API_URL:-https://open.bigmodel.cn/api/paas/v4/chat/completions}
+      - GLM_MODEL=${GLM_MODEL:-glm-5.1}
+    ports:
+      - "50051:50051"
+
+  tool-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: tool-service
+    container_name: sca-tool
+    restart: unless-stopped
+    environment:
+      - TOOL_SERVICE_PORT=50052
+    ports:
+      - "50052:50052"
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: api-gateway
+    container_name: sca-gateway
+    restart: unless-stopped
+    depends_on:
+      - auth-service
+      - core-service
+    environment:
+      - AUTH_SERVICE_ADDR=auth-service:50054
+      - CORE_SERVICE_ADDR=core-service:50051
+      - FRONTEND_DIR=/app/frontend
+      - GATEWAY_PORT=8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./frontend:/app/frontend:ro
+
+volumes:
+  redis-data:
+  etcd-data:
+  minio-data:
+  milvus-data:

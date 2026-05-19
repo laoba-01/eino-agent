@@ -22,10 +22,21 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+func getEnv(key, defaultVal string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return defaultVal
+}
+
 const (
-	defaultGLMAPIURL   = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
-	defaultModel       = "glm-5.1"
-	memoryServiceAddr  = "localhost:50053"
+	defaultGLMAPIURL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+	defaultModel     = "glm-5.1"
+)
+
+var (
+	memoryServiceAddr = getEnv("MEMORY_SERVICE_ADDR", "localhost:50053")
+	coreServicePort   = getEnv("CORE_SERVICE_PORT", "50051")
 )
 
 func loadEnvFile() {
@@ -475,7 +486,7 @@ func main() {
 		log.Printf("警告: 无法连接到记忆管理服务: %v", err)
 	}
 
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", ":"+coreServicePort)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -483,7 +494,7 @@ func main() {
 	s := grpc.NewServer()
 	proto.RegisterCoreServiceServer(s, server)
 
-	log.Println("Core Service (with GLM API + Learning Tracking) listening on port 50051...")
+	log.Println("Core Service (with GLM API + Learning Tracking) listening on port " + coreServicePort + "...")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}

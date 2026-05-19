@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"time"
 
 	"eino/auth-service/proto"
@@ -18,10 +19,21 @@ import (
 	"google.golang.org/grpc"
 )
 
+func getEnv(key, defaultVal string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return defaultVal
+}
+
 const (
-	port          = ":50054"
-	jwtSecret     = "your-secret-key-change-in-production"
 	tokenDuration = 24 * time.Hour
+)
+
+var (
+	jwtSecret    = getEnv("JWT_SECRET", "your-secret-key-change-in-production")
+	redisAddr    = getEnv("REDIS_ADDR", "localhost:6379")
+	authPort     = getEnv("AUTH_SERVICE_PORT", "50054")
 )
 
 var rdb *redis.Client
@@ -248,7 +260,7 @@ func (s *AuthServer) Logout(ctx context.Context, req *proto.LogoutRequest) (*pro
 
 func main() {
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     redisAddr,
 		Password: "",
 		DB:       0,
 	})
@@ -260,7 +272,7 @@ func main() {
 		log.Println("Auth Service will start but login/register will not work without Redis...")
 	}
 
-	lis, err := net.Listen("tcp", port)
+	lis, err := net.Listen("tcp", ":"+authPort)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -268,7 +280,7 @@ func main() {
 	s := grpc.NewServer()
 	proto.RegisterAuthServiceServer(s, &AuthServer{})
 
-	log.Printf("Auth Service listening on %s", port)
+	log.Printf("Auth Service listening on %s", ":"+authPort)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}

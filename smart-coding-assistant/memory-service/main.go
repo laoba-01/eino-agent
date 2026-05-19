@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"sort"
 	"time"
 
@@ -17,13 +18,25 @@ import (
 	"google.golang.org/grpc"
 )
 
+func getEnv(key, defaultVal string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return defaultVal
+}
+
 const (
-	milvusAddr    = "localhost:19530"
 	defaultDim    = 128
 	defaultTopK   = 10
 	vectorField   = "vector"
 	metadataField = "metadata"
 	idField       = "id"
+)
+
+var (
+	milvusAddr          = getEnv("MILVUS_ADDR", "localhost:19530")
+	memoryRedisAddr     = getEnv("REDIS_ADDR", "localhost:6379")
+	memoryServicePort   = getEnv("MEMORY_SERVICE_PORT", "50053")
 )
 
 type MemoryServiceServer struct {
@@ -665,7 +678,7 @@ func parseFloat(s string) float64 {
 func main() {
 	// Redis
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     memoryRedisAddr,
 		Password: "",
 		DB:       0,
 	})
@@ -679,7 +692,7 @@ func main() {
 	// Milvus
 	milvusClient := newMilvusClient()
 
-	lis, err := net.Listen("tcp", ":50053")
+	lis, err := net.Listen("tcp", ":"+memoryServicePort)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
