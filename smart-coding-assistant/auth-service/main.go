@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"time"
 
 	"eino/auth-service/proto"
@@ -17,6 +18,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
 )
+
+func getEnv(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
+}
 
 const (
 	port          = ":50054"
@@ -248,7 +256,7 @@ func (s *AuthServer) Logout(ctx context.Context, req *proto.LogoutRequest) (*pro
 
 func main() {
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     getEnv("REDIS_ADDR", "localhost:6379"),
 		Password: "",
 		DB:       0,
 	})

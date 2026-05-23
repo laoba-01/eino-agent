@@ -1,0 +1,119 @@
+version: "3.8"
+
+services:
+  # ========== 基础设施 ==========
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    volumes:
+      - etcd_data:/etcd
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    command: minio server /minio_data
+    volumes:
+      - minio_data:/minio_data
+    restart: unless-stopped
+
+  milvus:
+    image: milvusdb/milvus:v2.4-latest
+    command: milvus run standalone
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+      MINIO_ACCESS_KEY_ID: minioadmin
+      MINIO_SECRET_ACCESS_KEY: minioadmin
+    volumes:
+      - milvus_data:/var/lib/milvus
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    depends_on:
+      - etcd
+      - minio
+    restart: unless-stopped
+
+  # ========== gRPC 微服务 ==========
+
+  auth-service:
+    build: ./auth-service
+    environment:
+      REDIS_ADDR: redis:6379
+    ports:
+      - "50054:50054"
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  memory-service:
+    build: ./memory-service
+    environment:
+      REDIS_ADDR: redis:6379
+      MILVUS_ADDR: milvus:19530
+    ports:
+      - "50053:50053"
+    depends_on:
+      - redis
+      - milvus
+    restart: unless-stopped
+
+  core-service:
+    build: ./core-service
+    ports:
+      - "50051:50051"
+    restart: unless-stopped
+
+  tool-service:
+    build: ./tool-service
+    ports:
+      - "50052:50052"
+    restart: unless-stopped
+
+  # ========== API 网关 ==========
+
+  api-gateway:
+    build: ./api-gateway
+    environment:
+      AUTH_SERVICE_ADDR: auth-service:50054
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-service
+      - core-service
+      - tool-service
+      - memory-service
+    restart: unless-stopped
+
+  # ========== 前端 ==========
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - api-gateway
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  etcd_data:
+  minio_data:
+  milvus_data:

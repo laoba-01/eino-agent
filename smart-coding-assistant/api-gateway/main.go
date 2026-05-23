@@ -6,14 +6,23 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
 
+func getEnv(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
+}
+
 const (
-	authServiceAddr = "localhost:50054"
-	jwtSecret       = "your-secret-key-change-in-production"
+	jwtSecret = "your-secret-key-change-in-production"
 )
+
+var authServiceAddr = getEnv("AUTH_SERVICE_ADDR", "localhost:50054")
 
 // 定义请求和响应结构
 type ChatRequest struct {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"time"
 
 	"eino/memory-service/proto"
@@ -16,8 +17,14 @@ import (
 	"google.golang.org/grpc"
 )
 
+func getEnv(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
+}
+
 const (
-	milvusAddr    = "localhost:19530"
 	defaultDim    = 128
 	defaultTopK   = 10
 	vectorField   = "vector"
@@ -36,7 +43,7 @@ func newMilvusClient() client.Client {
 	defer cancel()
 
 	c, err := client.NewClient(ctx, client.Config{
-		Address: milvusAddr,
+		Address: getEnv("MILVUS_ADDR", "localhost:19530"),
 	})
 	if err != nil {
 		log.Printf("Warning: Failed to connect to Milvus: %v", err)
@@ -395,7 +402,7 @@ func joinInt64s(ids []int64) string {
 func main() {
 	// Redis
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     getEnv("REDIS_ADDR", "localhost:6379"),
 		Password: "",
 		DB:       0,
 	})
