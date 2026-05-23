@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "query": "Go中数组和切片有什么区别？如何动态扩容？",
+    "relevant_ids": [1, 5],
+    "category": "Go基础"
+  },
+  {
+    "id": 2,
+    "query": "如何使用goroutine实现并发编程？channel怎么用？",
+    "relevant_ids": [2],
+    "category": "Go并发"
+  },
+  {
+    "id": 3,
+    "query": "Go语言接口是怎么实现的？和Java接口有什么不同？",
+    "relevant_ids": [3],
+    "category": "Go接口"
+  },
+  {
+    "id": 4,
+    "query": "defer的执行顺序是什么？怎么处理错误和panic？",
+    "relevant_ids": [4],
+    "category": "Go错误处理"
+  },
+  {
+    "id": 5,
+    "query": "二分查找的原理是什么？时间复杂度多少？",
+    "relevant_ids": [6],
+    "category": "算法"
+  },
+  {
+    "id": 6,
+    "query": "哈希表是如何解决冲突的？什么时候需要扩容？",
+    "relevant_ids": [7],
+    "category": "数据结构"
+  },
+  {
+    "id": 7,
+    "query": "快速排序和归并排序有什么区别？各自适用什么场景？",
+    "relevant_ids": [8],
+    "category": "算法"
+  },
+  {
+    "id": 8,
+    "query": "动态规划的核心思想是什么？背包问题怎么解？",
+    "relevant_ids": [10, 9],
+    "category": "算法"
+  },
+  {
+    "id": 9,
+    "query": "二叉树有哪些遍历方式？什么是二叉搜索树？",
+    "relevant_ids": [11],
+    "category": "数据结构"
+  },
+  {
+    "id": 10,
+    "query": "Python列表推导式怎么用？和生成器有什么区别？",
+    "relevant_ids": [13],
+    "category": "Python"
+  },
+  {
+    "id": 11,
+    "query": "Python装饰器的原理是什么？@wraps有什么用？",
+    "relevant_ids": [14],
+    "category": "Python"
+  },
+  {
+    "id": 12,
+    "query": "RESTful API怎么设计？HTTP状态码有哪些？",
+    "relevant_ids": [16, 20],
+    "category": "Web开发"
+  },
+  {
+    "id": 13,
+    "query": "SQL查询怎么优化？索引如何工作？",
+    "relevant_ids": [17],
+    "category": "数据库"
+  },
+  {
+    "id": 14,
+    "query": "Docker是什么？Dockerfile怎么写？",
+    "relevant_ids": [23],
+    "category": "DevOps"
+  },
+  {
+    "id": 15,
+    "query": "JWT认证机制的工作原理是什么？和Session有什么区别？",
+    "relevant_ids": [27],
+    "category": "安全"
+  }
+]

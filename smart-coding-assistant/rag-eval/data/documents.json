@@ -1,0 +1,152 @@
+[
+  {
+    "id": 1,
+    "title": "Go切片与数组的区别",
+    "content": "Go语言中数组和切片是两种不同的数据结构。数组是固定长度的值类型，声明时必须指定长度，如 var arr [5]int。数组在赋值和传参时会复制整个数组。切片是对底层数组的动态视图，可以动态扩容，使用 make() 或字面量创建。切片包含三个字段：指针、长度和容量。使用 append() 追加元素时，如果容量不足会自动扩容。切片是引用类型，传递时只复制切片头。常见操作包括：切片截取 arr[1:3]、copy() 复制、len() 和 cap() 获取长度和容量。"
+  },
+  {
+    "id": 2,
+    "title": "Go并发编程：Goroutine与Channel",
+    "content": "Goroutine 是 Go 语言中的轻量级线程，由 Go 运行时调度管理。使用 go 关键字即可启动一个 goroutine：go funcName()。Channel 是 goroutine 之间通信的管道，分为无缓冲通道和有缓冲通道。无缓冲通道要求发送和接收同时就绪，有缓冲通道允许缓存一定数量的值。使用 make(chan type, buffer) 创建通道。<- 操作符用于发送和接收数据。select 语句可以同时等待多个通道操作。sync.WaitGroup 用于等待一组 goroutine 完成。sync.Mutex 提供互斥锁保护共享数据。遵循'不要通过共享内存来通信，而要通过通信来共享内存'的原则。"
+  },
+  {
+    "id": 3,
+    "title": "Go接口与类型系统",
+    "content": "Go 的接口是隐式实现的，类型只要实现了接口定义的所有方法就自动满足该接口。接口是一组方法签名的集合。空接口 interface{} 可以表示任何类型，Go 1.18 后推荐使用 any。类型断言使用 value, ok := x.(Type) 语法。类型 switch 可以判断接口值的具体类型。io.Reader 和 io.Writer 是最常用的标准接口。error 接口只需实现 Error() string 方法。接口值包含动态类型和动态值两部分，nil 接口的判断需要注意。Go 不支持继承，使用组合和接口实现多态。"
+  },
+  {
+    "id": 4,
+    "title": "Go defer与错误处理",
+    "content": "defer 语句在函数返回前执行，常用于资源清理，如关闭文件、释放锁。多个 defer 按 LIFO（后进先出）顺序执行。defer 的参数在声明时求值，而非执行时。recover() 只能在 defer 函数中捕获 panic。Go 使用显式错误处理，函数返回 error 类型表示可能失败。errors.New() 创建简单错误，fmt.Errorf() 可格式化错误信息。errors.Is() 和 errors.As() 用于错误链判断。自定义错误类型可实现 error 接口。panic 用于不可恢复的错误，recover 可以阻止程序崩溃。"
+  },
+  {
+    "id": 5,
+    "title": "Go复合数据类型详解",
+    "content": "Go 语言提供了丰富的复合数据类型。数组是定长同类型元素的集合。切片是动态数组，支持 append、copy 操作。Map 是键值对集合，使用 make(map[K]V) 创建，读取不存在的键返回零值。Struct 是字段的集合，支持匿名嵌入和标签(tag)。指针 *T 存储类型 T 的地址，& 操作符取地址。Go 没有指针运算。new(T) 返回 *T 指向零值，make() 只用于 slice、map、channel。range 关键字遍历数组、切片、map、字符串和通道。类型转换使用 T(x) 语法。"
+  },
+  {
+    "id": 6,
+    "title": "二分查找算法原理与实现",
+    "content": "二分查找（Binary Search）是一种在有序数组中查找目标值的高效算法。每次将查找范围缩小一半，时间复杂度 O(log n)。实现要点：使用左右指针 left 和 right，计算中间位置 mid = left + (right-left)/2 避免溢出。比较 nums[mid] 与 target，相等则返回 mid，小于则 left = mid+1，大于则 right = mid-1。变体包括：查找第一个等于 target 的位置、查找最后一个等于 target 的位置、查找第一个大于等于 target 的位置。二分查找也可应用于单调函数求值等场景。"
+  },
+  {
+    "id": 7,
+    "title": "哈希表原理与应用",
+    "content": "哈希表（Hash Table）通过哈希函数将键映射到数组索引，实现 O(1) 平均查找时间。哈希函数应均匀分布以减少冲突。冲突解决方法有：链地址法（拉链法）和开放寻址法（线性探测、二次探测、双重哈希）。负载因子 = 元素数量 / 数组大小，过高时触发 rehash 扩容。Go 的 map 使用拉链法和渐进式扩容。Java 的 HashMap 在链表长度超过 8 时转为红黑树。哈希表常用于去重、计数、缓存。一致性哈希用于分布式系统。布隆过滤器是空间高效的近似哈希结构。"
+  },
+  {
+    "id": 8,
+    "title": "排序算法比较与选择",
+    "content": "常见排序算法包括：冒泡排序 O(n²)，选择排序 O(n²)，插入排序 O(n²) 但对小规模数据高效。归并排序 O(n log n) 稳定，需要额外空间。快速排序 O(n log n) 平均最优，最坏 O(n²)，不稳定。堆排序 O(n log n) 不稳定，原地排序。计数排序 O(n+k) 适合整数范围小的场景。桶排序和基数排序 O(n) 适合特定分布数据。Go 的 sort 包使用混合排序（快排+插入+堆排）。稳定排序使用 sort.SliceStable。选择排序算法的考量因素：时间复杂度、空间复杂度、稳定性、数据特征。"
+  },
+  {
+    "id": 9,
+    "title": "递归思想与经典问题",
+    "content": "递归是将问题分解为相同但规模更小的子问题的方法。三要素：递归终止条件、递归调用本身、合并子问题结果。经典递归问题：斐波那契数列 fib(n)=fib(n-1)+fib(n-2)，汉诺塔问题，二叉树遍历（前序、中序、后序），全排列生成，图的深度优先搜索。递归优化：记忆化搜索（备忘录法）避免重复计算，尾递归优化（Go 不支持）。递归转化为迭代使用栈模拟。递归的时间复杂度分析使用主定理。递归代码简洁但要注意栈溢出风险。回溯算法是递归的典型应用。"
+  },
+  {
+    "id": 10,
+    "title": "动态规划入门",
+    "content": "动态规划（DP）是解决最优化问题的算法范式，核心思想是将问题分解为重叠子问题，自底向上求解并存储中间结果。适用条件：最优子结构和重叠子问题。经典问题：背包问题（0/1背包、完全背包）、最长公共子序列(LCS)、最长递增子序列(LIS)、编辑距离、硬币找零。DP 实现方式：自顶向下（记忆化递归）和自底向上（表格法）。状态定义和状态转移方程是 DP 的核心。空间优化常用滚动数组。路径问题的 DP 常使用二维数组。区间 DP 处理序列的区间问题。"
+  },
+  {
+    "id": 11,
+    "title": "树与二叉树数据结构",
+    "content": "树是层次化数据结构。二叉树每个节点最多两个子节点。遍历方式：前序（根-左-右）、中序（左-根-右）、后序（左-右-根）、层序（BFS）。二叉搜索树（BST）左子树小于根，右子树大于根，查找 O(log n) 但可能退化。平衡树：AVL 树（严格平衡）、红黑树（近似平衡）。堆是完全二叉树：大顶堆（父>=子）、小顶堆（父<=子），用于优先队列。Trie（前缀树）用于字符串高效检索。Go 中没有内置树结构，需自行实现。"
+  },
+  {
+    "id": 12,
+    "title": "图的表示与遍历算法",
+    "content": "图的表示方法：邻接矩阵（适合稠密图）、邻接表（适合稀疏图）。DFS（深度优先搜索）使用栈或递归，用于连通性判断、拓扑排序、找环。BFS（广度优先搜索）使用队列，用于最短路径（无权图）、层序遍历。最短路径算法：Dijkstra（非负权值）、Bellman-Ford（可处理负权）、Floyd-Warshall（多源最短路径）、A*（启发式搜索）。最小生成树：Prim 算法、Kruskal 算法（并查集）。拓扑排序用于有向无环图（DAG）。图的遍历时间复杂度 O(V+E)。"
+  },
+  {
+    "id": 13,
+    "title": "Python列表推导式与生成器",
+    "content": "列表推导式（List Comprehension）是 Python 中创建列表的简洁语法：[expr for item in iterable if condition]。支持多重循环和嵌套推导。优点：代码简洁、执行效率高。但复杂逻辑应使用传统循环以保持可读性。生成器表达式使用圆括号，惰性求值，节省内存。生成器函数使用 yield 关键字，每次调用返回一个值并暂停状态。使用 next() 或 for 循环获取值。生成器适合处理大型数据集和无限序列。Python 3 中 range() 和 map() 返回迭代器而非列表。"
+  },
+  {
+    "id": 14,
+    "title": "Python装饰器原理",
+    "content": "装饰器是 Python 中修改函数或类行为的语法糖。本质是高阶函数，接受函数作为参数并返回新函数。@decorator 语法等价于 func = decorator(func)。带参数的装饰器需嵌套三层函数。functools.wraps 保留原函数的元信息（__name__、__doc__）。常见应用：日志记录、性能计时、权限检查、缓存、重试机制。类装饰器使用 __call__ 方法。多个装饰器的执行顺序是从下往上。装饰器在定义时执行，而非调用时。"
+  },
+  {
+    "id": 15,
+    "title": "Python异常处理与上下文管理器",
+    "content": "Python 使用 try/except/else/finally 处理异常。except 捕获特定异常类型，不指定则捕获所有。else 在无异常时执行，finally 总是执行。raise 抛出异常，可链式异常 raise ... from ...。自定义异常继承 Exception 类。上下文管理器实现 __enter__ 和 __exit__ 方法，或使用 contextlib.contextmanager 装饰器。with 语句自动管理资源（文件、锁、数据库连接）。__exit__ 可处理异常并决定是否抑制。"
+  },
+  {
+    "id": 16,
+    "title": "RESTful API设计原则",
+    "content": "REST（Representational State Transfer）是一种 Web API 架构风格。核心原则：资源导向（URL 表示资源）、统一接口（GET/POST/PUT/PATCH/DELETE）、无状态（请求独立）、可缓存、分层系统。URL 使用名词复数形式：/users、/users/{id}。HTTP 状态码：200 成功、201 创建、204 无内容、400 错误请求、401 未授权、403 禁止、404 未找到、500 服务器错误。分页使用 limit/offset 或 cursor。过滤和排序通过查询参数。API 版本控制：/v1/users 或 Header。HATEOAS 提供相关链接。"
+  },
+  {
+    "id": 17,
+    "title": "SQL查询优化与索引",
+    "content": "SQL 查询优化是提升数据库性能的关键。索引是加速查询的数据结构，常用 B+树索引。创建索引：CREATE INDEX idx_name ON table(column)。复合索引遵循最左前缀原则。使用 EXPLAIN 分析查询计划。避免 SELECT *，指定需要的列。WHERE 子句中使用索引列。避免在索引列上使用函数或计算。JOIN 时小表驱动大表。子查询可改写为 JOIN 或 EXISTS。分页优化使用延迟关联或游标。慢查询日志记录执行时间长的 SQL。数据库范式化和反范式化需权衡。"
+  },
+  {
+    "id": 18,
+    "title": "Git版本控制核心概念",
+    "content": "Git 是分布式版本控制系统。工作区、暂存区（stage）和仓库（repository）三层结构。git add 添加到暂存区，git commit 提交到仓库。分支（branch）是指向提交的指针，HEAD 指向当前分支。git merge 合并分支，git rebase 变基使历史线性。冲突解决需要手动编辑文件并标记解决。git stash 暂存未提交的修改。git reset 回退（--soft/--mixed/--hard），git revert 创建反向提交。远程操作：git fetch 拉取、git pull = fetch+merge、git push 推送。git log 和 git reflog 查看历史。.gitignore 忽略文件。"
+  },
+  {
+    "id": 19,
+    "title": "面向对象设计原则",
+    "content": "SOLID 原则是面向对象设计的五个基本原则。单一职责（SRP）：一个类只有一个引起变化的原因。开闭原则（OCP）：对扩展开放，对修改关闭。里氏替换（LSP）：子类可以替换父类而不影响程序正确性。接口隔离（ISP）：不应强迫客户端依赖不使用的方法。依赖倒置（DIP）：依赖抽象而非具体实现。其他原则：合成复用（组合优于继承）、迪米特法则（最少知识原则）。设计模式是这些原则的具体应用。在实践中不要过度设计，保持简单。"
+  },
+  {
+    "id": 20,
+    "title": "HTTP协议与网络基础",
+    "content": "HTTP（HyperText Transfer Protocol）是应用层协议。HTTP/1.1 支持持久连接和管道化。HTTP/2 支持多路复用、头部压缩、服务器推送。HTTP/3 基于 QUIC（UDP），减少握手延迟。请求由方法、URL、头部和正文组成。常见首部：Content-Type、Authorization、Cache-Control、CORS 头。Cookie 用于状态保持。HTTPS 在 HTTP 基础上增加 TLS 加密层。DNS 将域名解析为 IP。TCP 三次握手建立连接，四次挥手断开。WebSocket 提供全双工通信。"
+  },
+  {
+    "id": 21,
+    "title": "Go包管理与模块系统",
+    "content": "Go Modules 是 Go 的依赖管理系统。go mod init 初始化模块。go.mod 文件记录模块路径和依赖版本。go.sum 记录依赖的哈希校验。go get 添加依赖，go mod tidy 清理未使用的依赖。语义版本控制（SemVer）：v主版本.次版本.补丁版本。replace 指令替换依赖路径（本地开发）。indirect 标记间接依赖。vendor 目录存放依赖副本。internal 包限制外部导入。go.work 支持多模块工作区。代理 GOPROXY 加速下载。私有模块使用 GOPRIVATE。"
+  },
+  {
+    "id": 22,
+    "title": "Linux常用命令与Shell编程",
+    "content": "Linux 文件操作：ls 列目录、cd 切换、pwd 当前路径、cp 复制、mv 移动、rm 删除、chmod 权限、chown 所有者。文本处理：cat 查看、grep 搜索、sed 流编辑、awk 文本分析。管道 | 连接命令，重定向 > 和 >>。进程管理：ps 查看进程、top 实时监控、kill 终止。网络：curl 请求、wget 下载、ss/netstat 网络状态。Shell 脚本以 #!/bin/bash 开头，变量赋值无空格（name=value），使用 $ 引用。条件判断使用 [ ] 和 [[ ]]。for/while 循环。函数定义和使用。环境变量配置文件：~/.bashrc、/etc/profile。"
+  },
+  {
+    "id": 23,
+    "title": "Docker容器化技术",
+    "content": "Docker 是容器化平台，将应用及其依赖打包为镜像。Dockerfile 定义镜像构建步骤：FROM 基础镜像、RUN 执行命令、COPY 复制文件、WORKDIR 工作目录、EXPOSE 端口、CMD/ENTRYPOINT 启动命令。镜像分层构建，利用缓存加速。docker build 构建，docker run 运行容器。常用参数：-d 后台、-p 端口映射、-v 卷挂载、-e 环境变量、--name 命名。docker-compose 编排多容器应用，使用 YAML 配置文件。Docker Hub 是公共镜像仓库。容器是无状态的，持久化需使用卷。"
+  },
+  {
+    "id": 24,
+    "title": "消息队列与异步处理",
+    "content": "消息队列实现系统间异步解耦通信。常见消息队列：RabbitMQ（AMQP协议）、Kafka（高吞吐日志）、Redis（轻量级）。生产者发送消息到队列，消费者从队列获取处理。消息模式：点对点、发布/订阅。消息可靠性：持久化、ACK确认、重试机制。Kafka 使用分区和消费者组实现水平扩展。消息顺序性保证。死信队列处理失败消息。延迟队列实现定时任务。幂等性保证消息重复消费的安全。消息队列用于削峰填谷、日志收集、事件驱动架构。"
+  },
+  {
+    "id": 25,
+    "title": "数据库事务与ACID特性",
+    "content": "事务是数据库操作的逻辑单元，保证数据一致性。ACID：原子性（Atomicity，事务要么全部成功要么全部回滚）、一致性（Consistency，事务前后数据满足约束）、隔离性（Isolation，并发事务互不干扰）、持久性（Durability，提交后数据永久保存）。隔离级别：读未提交（脏读）、读已提交（不可重复读）、可重复读（幻读）、串行化。MySQL InnoDB 默认可重复读，使用 MVCC 和间隙锁防止幻读。PostgreSQL 默认读已提交。分布式事务使用两阶段提交（2PC）或 Saga 模式。"
+  },
+  {
+    "id": 26,
+    "title": "微服务架构设计模式",
+    "content": "微服务将应用拆分为独立的、松耦合的小服务。每个服务独立部署、拥有独立数据库。服务间通信：同步（HTTP/gRPC，简单但有耦合）和异步（消息队列，解耦但复杂）。服务发现（Consul、Etcd、Nacos）自动定位服务实例。API 网关统一入口，处理认证、限流、路由。配置中心集中管理配置。断路器（Circuit Breaker）防止级联故障。分布式追踪（Jaeger、Zipkin）监控调用链。CQRS 读写分离，Event Sourcing 事件溯源。BFF（Backend for Frontend）为不同客户端定制 API。"
+  },
+  {
+    "id": 27,
+    "title": "认证与授权机制",
+    "content": "认证（Authentication）验证用户身份，授权（Authorization）控制访问权限。JWT（JSON Web Token）自包含令牌，由 Header、Payload、Signature 三部分组成。使用 HMAC 或 RSA 签名，不存储敏感信息在 Payload 中。OAuth 2.0 授权框架，四种授权模式：授权码（最安全）、隐式（已废弃）、密码、客户端凭证。OpenID Connect 基于 OAuth 2.0 提供身份认证。Session 机制使用 Cookie 存储 Session ID，服务端存储状态。RBAC 基于角色控制权限。多因素认证（MFA）增加安全性。API Key 用于服务间认证。"
+  },
+  {
+    "id": 28,
+    "title": "Go单元测试与基准测试",
+    "content": "Go 内置 testing 包进行测试。测试文件以 _test.go 结尾，函数签名 func TestXxx(t *testing.T)。使用 t.Error/t.Fatal 报告失败。子测试 t.Run() 组织测试用例。Table-driven tests 是 Go 社区推荐模式。t.Parallel() 并行执行测试。TestMain 函数进行测试前后的 setup/teardown。覆盖率：go test -cover。基准测试：func BenchmarkXxx(b *testing.B)，使用 b.N 控制循环。go test -bench 运行基准测试。竞态检测 go test -race。testify 库提供 assert 和 mock 功能。"
+  },
+  {
+    "id": 29,
+    "title": "Redis缓存策略与数据结构",
+    "content": "Redis 是内存键值数据库，支持多种数据结构。String 用于缓存、计数器、分布式锁。Hash 存储对象。List 是双向链表，用于消息队列。Set 去重集合，Sinter 交并差。Sorted Set 按分数排序，用于排行榜。Bitmap 位操作，HyperLogLog 基数统计。过期策略：定时删除+惰性删除+定期删除。淘汰策略：LRU、LFU、TTL、随机。持久化：RDB 快照和 AOF 日志。缓存模式：Cache Aside、Read/Write Through、Write Behind。缓存穿透（布隆过滤器）、击穿（互斥锁）、雪崩（随机过期时间）。Redis Cluster 分片。"
+  },
+  {
+    "id": 30,
+    "title": "设计模式概览",
+    "content": "设计模式是软件设计中常见问题的可复用解决方案。创建型：单例模式（全局唯一实例）、工厂方法（子类决定实例化哪个类）、抽象工厂（创建相关对象族）、建造者（分步构建复杂对象）、原型（克隆对象）。结构型：适配器（接口转换）、装饰器（动态添加职责）、代理（控制访问）、外观（简化接口）、组合（树形结构）。行为型：策略（算法族可互换）、观察者（发布/订阅）、命令（请求封装）、模板方法（算法骨架）、责任链（请求沿链传递）。模式不是银弹，要在合适的场景使用。"
+  }
+]

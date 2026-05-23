@@ -1,0 +1,35 @@
+这个项目的 agent 编排采用了**中心化编排（Hub-and-Spoke）**模式，核心是
+  core-service，它作为唯一的编排器串联整个流程。下面梳理关键点：
+
+  编排架构
+
+  前端 → API Gateway → Core Service（编排器）→ LLM API（智谱 GLM）
+                           │
+                           └──→ Memory Service → Redis / Milvus
+
+  一次 Chat 请求的完整编排流程
+
+  1. API Gateway 接收 HTTP 请求，做 JWT 鉴权（调用 auth-service）
+  2. 鉴权通过后，转发到 Core Service 的 Chat RPC
+  3. Core Service 构造 system prompt + user message，调用智谱 GLM API
+  4. LLM 返回后，Core Service 用正则解析结构化输出：
+    - <response>...</response> — 对话回复
+    - <knowledge_points>[...]</knowledge_points> — 知识点掌握度变化
+  5. 解析出的知识点通过 Memory Service 存入 Redis（指数移动平均算法合并新旧数据）
+  6. 最终响应返回前端
+
+  编排特点
+
+  - 同步直线式编排：没有 DAG、工作流引擎或 Agent 框架，全程线性阻塞调用
+  - Tool Service 未接入：tool-service
+  定义了三个工具（代码错误分析、语法查询、题目生成），但都是空实现占位符，Chat 流程中从未调用。工具能力只在   
+  system prompt 中作为文字描述存在
+  - 无 Function Calling：Agent 不是用 tool definitions + function calling 的方式编排工具，而是用 prompt 指令让
+   LLM 输出特定格式的 XML，再用正则解析
+  - 单文件单体：每个服务都用一个大 main.go 承载全部逻辑，没有分层/分包
+
+  总结
+
+  当前的编排本质上就是：接收请求 → 调一次 LLM → 解析结构化输出 → 存知识点，没有复杂的多 Agent
+  协作、没有并行调用、没有重试/熔断，是一个非常轻量的编排方式。tool-service
+  是预留的扩展点，但目前属于"死代码"，还未真正参与到编排链路中。
