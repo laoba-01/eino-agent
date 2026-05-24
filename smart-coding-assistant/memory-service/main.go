@@ -124,7 +124,7 @@ func (s *MemoryServiceServer) ensureCollectionLoaded(ctx context.Context, collec
 	return nil
 }
 
-// --- Key-value context (Redis) ---
+// --- 键值对上下文（Redis）---
 
 func (s *MemoryServiceServer) SaveContext(ctx context.Context, req *proto.SaveContextRequest) (*proto.SaveContextResponse, error) {
 	if s.rdb == nil {
@@ -210,7 +210,7 @@ func (s *MemoryServiceServer) UpdateContext(ctx context.Context, req *proto.Upda
 	return &proto.UpdateContextResponse{Success: true}, nil
 }
 
-// --- Vector operations (Milvus) ---
+// --- 向量操作（Milvus）---
 
 func (s *MemoryServiceServer) SaveVector(ctx context.Context, req *proto.SaveVectorRequest) (*proto.SaveVectorResponse, error) {
 	if s.milvus == nil {
@@ -360,7 +360,7 @@ func (s *MemoryServiceServer) DeleteVector(ctx context.Context, req *proto.Delet
 	return &proto.DeleteVectorResponse{Success: true}, nil
 }
 
-// --- Helpers ---
+// --- 辅助函数 ---
 
 func mapToInterface(m map[string]string) []interface{} {
 	result := make([]interface{}, 0, len(m)*2)
@@ -400,7 +400,7 @@ func joinInt64s(ids []int64) string {
 }
 
 func main() {
-	// Redis
+	// Redis 连接
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     getEnv("REDIS_ADDR", "localhost:6379"),
 		Password: "",
@@ -413,7 +413,7 @@ func main() {
 		log.Println("Continuing without Redis connection...")
 	}
 
-	// Milvus
+	// Milvus 连接
 	milvusClient := newMilvusClient()
 
 	lis, err := net.Listen("tcp", ":50053")

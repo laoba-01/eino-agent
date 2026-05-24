@@ -34,7 +34,7 @@ message GetHistoryResponse {
 message ChatMessage {
   string id = 1;
   string user_id = 2;
-  string role = 3; // user or assistant
+  string role = 3; // 用户或助手
   string content = 4;
   int64 timestamp = 5;
 }
