@@ -1,0 +1,8 @@
+Name: memory.rpc
+ListenOn: 0.0.0.0:50053
+
+BizRedis:
+  Addr: localhost:6379
+
+Milvus:
+  Addr: localhost:19530

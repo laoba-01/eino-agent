@@ -1,0 +1,9 @@
+Name: auth.rpc
+ListenOn: 0.0.0.0:50054
+
+BizRedis:
+  Addr: localhost:6379
+
+JWT:
+  Secret: your-secret-key-change-in-production
+  Expire: 86400

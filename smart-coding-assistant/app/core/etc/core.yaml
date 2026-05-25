@@ -1,0 +1,5 @@
+Name: core.rpc
+ListenOn: 0.0.0.0:50051
+
+MCP:
+  Endpoints: "tool-service=http://localhost:8081/mcp"

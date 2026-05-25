@@ -19,6 +19,8 @@ services:
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ETCD_SNAPSHOT_COUNT=50000
     command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    ports:
+      - "2379:2379"
     volumes:
       - etcd_data:/etcd
     restart: unless-stopped
@@ -51,24 +53,25 @@ services:
       - minio
     restart: unless-stopped
 
-  # ========== gRPC 微服务 ==========
+  # ========== go-zero RPC 微服务 ==========
 
-  auth-service:
+  auth-rpc:
     build:
       context: .
-      target: auth-service
+      target: auth-rpc
     environment:
       REDIS_ADDR: redis:6379
     ports:
       - "50054:50054"
     depends_on:
       - redis
+      - etcd
     restart: unless-stopped
 
-  memory-service:
+  memory-rpc:
     build:
       context: .
-      target: memory-service
+      target: memory-rpc
     environment:
       REDIS_ADDR: redis:6379
       MILVUS_ADDR: milvus:19530
@@ -77,44 +80,48 @@ services:
     depends_on:
       - redis
       - milvus
+      - etcd
     restart: unless-stopped
 
-  core-service:
+  core-rpc:
     build:
       context: .
-      target: core-service
+      target: core-rpc
     environment:
-      MCP_SERVER_ENDPOINTS: "tool-service=http://tool-service:8081/mcp"
+      MCP_ENDPOINTS: "tool-service=http://tool-rpc:8081/mcp"
     ports:
       - "50051:50051"
+    depends_on:
+      - etcd
     restart: unless-stopped
 
-  tool-service:
+  tool-rpc:
     build:
       context: .
-      target: tool-service
+      target: tool-rpc
     environment:
-      MCP_SERVER_PORT: "8081"
+      MCP_PORT: "8081"
     ports:
       - "50052:50052"
       - "8081:8081"
+    depends_on:
+      - etcd
     restart: unless-stopped
 
-  # ========== API 网关 ==========
+  # ========== API 网关（go-zero rest） ==========
 
   api-gateway:
     build:
       context: .
       target: api-gateway
-    environment:
-      AUTH_SERVICE_ADDR: auth-service:50054
     ports:
       - "8080:8080"
     depends_on:
-      - auth-service
-      - core-service
-      - tool-service
-      - memory-service
+      - auth-rpc
+      - core-rpc
+      - tool-rpc
+      - memory-rpc
+      - etcd
     restart: unless-stopped
 
   # ========== 前端 ==========

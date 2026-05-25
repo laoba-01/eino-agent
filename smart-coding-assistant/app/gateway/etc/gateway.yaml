@@ -1,0 +1,11 @@
+Name: gateway
+Host: 0.0.0.0
+Port: 8080
+
+AuthRpc:
+  Endpoints:
+  - localhost:50054
+
+CoreRpc:
+  Endpoints:
+  - localhost:50051

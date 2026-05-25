@@ -1,0 +1,80 @@
+syntax = "v1"
+
+info(
+    title: "智能编程助手 API"
+    desc: "Smart Coding Assistant API Gateway"
+)
+
+// ---- 认证 ----
+type RegisterRequest {
+    Username string `json:"username"`
+    Password string `json:"password"`
+    Email    string `json:"email,optional"`
+}
+type RegisterResponse {
+    Success bool   `json:"success"`
+    Message string `json:"message"`
+    UserId  string `json:"user_id,omitempty"`
+}
+
+type LoginRequest {
+    Username string `json:"username"`
+    Password string `json:"password"`
+}
+type LoginResponse {
+    Success bool   `json:"success"`
+    Message string `json:"message"`
+    Token   string `json:"token,omitempty"`
+    UserId  string `json:"user_id,omitempty"`
+}
+
+type LogoutResponse {
+    Success bool `json:"success"`
+}
+
+// ---- 聊天 ----
+type ChatRequest {
+    Message string            `json:"message"`
+    Context map[string]string `json:"context,optional"`
+}
+type ChatResponse {
+    Response   string            `json:"response"`
+    IsFinished bool              `json:"is_finished"`
+    Context    map[string]string `json:"context"`
+}
+
+// ---- 健康检查 ----
+type HealthResponse {
+    Status    string `json:"status"`
+    Timestamp string `json:"timestamp"`
+}
+
+// ---- 错误 ----
+type ErrorResponse {
+    Error string `json:"error"`
+}
+
+@server(
+    middleware: Cors
+)
+service gateway {
+    @handler register
+    post /api/auth/register (RegisterRequest) returns (RegisterResponse)
+
+    @handler login
+    post /api/auth/login (LoginRequest) returns (LoginResponse)
+
+    @handler healthCheck
+    get /health returns (HealthResponse)
+}
+
+@server(
+    middleware: Cors,Auth
+)
+service gateway {
+    @handler logout
+    post /api/auth/logout returns (LogoutResponse)
+
+    @handler chat
+    post /api/chat (ChatRequest) returns (ChatResponse)
+}
