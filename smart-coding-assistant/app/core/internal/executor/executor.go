@@ -3,6 +3,7 @@ package executor
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	mcp "github.com/modelcontextprotocol/go-sdk/mcp"
 
@@ -61,13 +62,16 @@ func (e *DefaultExecutor) executeToolStep(ctx context.Context, step *planner.Ste
 	for serverName, tools := range allTools {
 		for _, t := range tools {
 			if t.Name == step.ToolName {
-				args := make(map[string]interface{})
+				args := make(map[string]any)
 				for k, v := range step.ToolArgs {
 					args[k] = v
 				}
 				result, err := e.mcpClient.CallTool(ctx, serverName, step.ToolName, args)
 				if err != nil {
 					return fmt.Errorf("mcp调用 %s/%s: %w", serverName, step.ToolName, err)
+				}
+				if result.IsError {
+					return fmt.Errorf("mcp工具 %s/%s 执行失败: %s", serverName, step.ToolName, extractText(result))
 				}
 				step.Result = extractText(result)
 				return nil
@@ -78,17 +82,17 @@ func (e *DefaultExecutor) executeToolStep(ctx context.Context, step *planner.Ste
 }
 
 func (e *DefaultExecutor) executeReasoningStep(ctx context.Context, plan *planner.Plan, step *planner.Step) error {
-	var prevResults string
+	var prevResults strings.Builder
 	for i := 0; i < step.Index-1 && i < len(plan.Steps); i++ {
 		s := plan.Steps[i]
 		if s.Status == string(planner.StepStatusCompleted) && s.Result != "" {
-			prevResults += fmt.Sprintf("\n步骤%d(%s)结果: %s\n", s.Index, s.Description, s.Result)
+			fmt.Fprintf(&prevResults, "\n步骤%d(%s)结果: %s\n", s.Index, s.Description, s.Result)
 		}
 	}
 
 	messages := []llm.ChatMessage{
 		{Role: "system", Content: "你是执行助手。根据计划和前面步骤的结果，完成当前步骤。给出简洁准确的回答。"},
-		{Role: "user", Content: fmt.Sprintf("计划目标: %s\n\n当前步骤: %s\n\n前面步骤结果:%s\n\n请完成当前步骤。", plan.Goal, step.Description, prevResults)},
+		{Role: "user", Content: fmt.Sprintf("计划目标: %s\n\n当前步骤: %s\n\n前面步骤结果:%s\n\n请完成当前步骤。", plan.Goal, step.Description, prevResults.String())},
 	}
 
 	result, err := e.llmClient.Chat(ctx, messages)
