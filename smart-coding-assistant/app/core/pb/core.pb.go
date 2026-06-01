@@ -7,6 +7,7 @@
 package pb
 
 import (
+	"fmt"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -86,6 +87,8 @@ type ChatResponse struct {
 	Response      string                 `protobuf:"bytes,1,opt,name=response,proto3" json:"response,omitempty"`
 	IsFinished    bool                   `protobuf:"varint,2,opt,name=is_finished,json=isFinished,proto3" json:"is_finished,omitempty"`
 	Context       map[string]string      `protobuf:"bytes,3,rep,name=context,proto3" json:"context,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Plan          *PlanInfo              `protobuf:"bytes,4,opt,name=plan,proto3" json:"plan,omitempty"`
+	Steps         []*StepResult          `protobuf:"bytes,5,rep,name=steps,proto3" json:"steps,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -137,6 +140,20 @@ func (x *ChatResponse) GetIsFinished() bool {
 func (x *ChatResponse) GetContext() map[string]string {
 	if x != nil {
 		return x.Context
+	}
+	return nil
+}
+
+func (x *ChatResponse) GetPlan() *PlanInfo {
+	if x != nil {
+		return x.Plan
+	}
+	return nil
+}
+
+func (x *ChatResponse) GetSteps() []*StepResult {
+	if x != nil {
+		return x.Steps
 	}
 	return nil
 }
@@ -319,6 +336,85 @@ func (x *ChatMessage) GetTimestamp() int64 {
 		return x.Timestamp
 	}
 	return 0
+}
+
+type PlanInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	PlanId         string `protobuf:"bytes,1,opt,name=plan_id,json=planId,proto3" json:"plan_id,omitempty"`
+	Goal           string `protobuf:"bytes,2,opt,name=goal,proto3" json:"goal,omitempty"`
+	TotalSteps     int32  `protobuf:"varint,3,opt,name=total_steps,json=totalSteps,proto3" json:"total_steps,omitempty"`
+	CompletedSteps int32  `protobuf:"varint,4,opt,name=completed_steps,json=completedSteps,proto3" json:"completed_steps,omitempty"`
+}
+
+func (x *PlanInfo) Reset()         { *x = PlanInfo{} }
+func (x *PlanInfo) String() string {
+	if x == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("plan_id:%q goal:%q total_steps:%d completed_steps:%d", x.PlanId, x.Goal, x.TotalSteps, x.CompletedSteps)
+}
+func (*PlanInfo) ProtoMessage()    {}
+
+func (x *PlanInfo) GetPlanId() string {
+	if x != nil { return x.PlanId }
+	return ""
+}
+func (x *PlanInfo) GetGoal() string {
+	if x != nil { return x.Goal }
+	return ""
+}
+func (x *PlanInfo) GetTotalSteps() int32 {
+	if x != nil { return x.TotalSteps }
+	return 0
+}
+func (x *PlanInfo) GetCompletedSteps() int32 {
+	if x != nil { return x.CompletedSteps }
+	return 0
+}
+
+type StepResult struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Index       int32  `protobuf:"varint,1,opt,name=index,proto3" json:"index,omitempty"`
+	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	Status      string `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
+	Result      string `protobuf:"bytes,4,opt,name=result,proto3" json:"result,omitempty"`
+	Error       string `protobuf:"bytes,5,opt,name=error,proto3" json:"error,omitempty"`
+}
+
+func (x *StepResult) Reset()         { *x = StepResult{} }
+func (x *StepResult) String() string {
+	if x == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("index:%d description:%q status:%q result:%q error:%q", x.Index, x.Description, x.Status, x.Result, x.Error)
+}
+func (*StepResult) ProtoMessage()    {}
+
+func (x *StepResult) GetIndex() int32 {
+	if x != nil { return x.Index }
+	return 0
+}
+func (x *StepResult) GetDescription() string {
+	if x != nil { return x.Description }
+	return ""
+}
+func (x *StepResult) GetStatus() string {
+	if x != nil { return x.Status }
+	return ""
+}
+func (x *StepResult) GetResult() string {
+	if x != nil { return x.Result }
+	return ""
+}
+func (x *StepResult) GetError() string {
+	if x != nil { return x.Error }
+	return ""
 }
 
 var File_app_core_core_proto protoreflect.FileDescriptor
