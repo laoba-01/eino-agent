@@ -3,3 +3,8 @@ ListenOn: 0.0.0.0:50051
 
 MCP:
   Endpoints: "tool-service=http://localhost:8081/mcp"
+
+LLM:
+  Endpoint: "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
+  APIKey: ""
+  Model: "deepseek-v4-pro"
