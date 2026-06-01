@@ -57,7 +57,7 @@ func (p *LLMPlanner) GeneratePlan(ctx context.Context, userMessage string, histo
 	plan.CreatedAt = time.Now()
 	for i := range plan.Steps {
 		plan.Steps[i].Index = i + 1
-		plan.Steps[i].Status = "pending"
+		plan.Steps[i].Status = string(StepStatusPending)
 	}
 	return plan, nil
 }
@@ -83,7 +83,10 @@ func buildSystemPrompt(tools []string) string {
 
 func buildUserPrompt(message string, context map[string]string) string {
 	if len(context) > 0 {
-		ctxJSON, _ := json.Marshal(context)
+		ctxJSON, err := json.Marshal(context)
+		if err != nil {
+			return fmt.Sprintf("用户需求：%s", message)
+		}
 		return fmt.Sprintf("用户需求：%s\n\n历史上下文：%s", message, string(ctxJSON))
 	}
 	return fmt.Sprintf("用户需求：%s", message)
@@ -91,12 +94,10 @@ func buildUserPrompt(message string, context map[string]string) string {
 
 func parsePlanJSON(raw string) (*Plan, error) {
 	raw = strings.TrimSpace(raw)
-	if strings.HasPrefix(raw, "```json") {
-		raw = strings.TrimPrefix(raw, "```json")
-		raw = strings.TrimSuffix(raw, "```")
-	} else if strings.HasPrefix(raw, "```") {
-		raw = strings.TrimPrefix(raw, "```")
-		raw = strings.TrimSuffix(raw, "```")
+	if after, ok := strings.CutPrefix(raw, "```json"); ok {
+		raw = strings.TrimSuffix(after, "```")
+	} else if after, ok := strings.CutPrefix(raw, "```"); ok {
+		raw = strings.TrimSuffix(after, "```")
 	}
 	raw = strings.TrimSpace(raw)
 
