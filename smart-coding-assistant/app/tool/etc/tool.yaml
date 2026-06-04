@@ -2,4 +2,4 @@ Name: tool.rpc
 ListenOn: 0.0.0.0:50052
 
 MCP:
-  Port: 8081
+  Port: "8081"
