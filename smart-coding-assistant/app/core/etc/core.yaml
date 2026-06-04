@@ -3,3 +3,12 @@ ListenOn: 0.0.0.0:50051
 
 MCP:
   Endpoints: "tool-service=http://localhost:8081/mcp"
+
+Embedding:
+  Endpoint: https://api.deepseek.com/v1
+  ApiKey: ${DEEPSEEK_API_KEY}
+  Model: deepseek-chat
+
+MemoryRpc:
+  Endpoints:
+  - localhost:50053

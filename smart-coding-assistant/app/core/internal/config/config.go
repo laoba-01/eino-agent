@@ -7,4 +7,10 @@ type Config struct {
 	MCP struct {
 		Endpoints string
 	}
+	Embedding struct {
+		Endpoint string
+		ApiKey   string
+		Model    string
+	}
+	MemoryRpc zrpc.RpcClientConf
 }
