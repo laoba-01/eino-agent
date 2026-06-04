@@ -89,6 +89,7 @@ services:
       target: core-rpc
     environment:
       MCP_ENDPOINTS: "tool-service=http://tool-rpc:8081/mcp"
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
     ports:
       - "50051:50051"
     depends_on:
