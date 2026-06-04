@@ -4,7 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"hash/fnv"
+	"log"
 	"strings"
+	"time"
+
+	memorypb "smart-coding-assistant/app/memory/pb"
 
 	"smart-coding-assistant/app/core/internal/svc"
 	"smart-coding-assistant/app/core/pb"
@@ -35,16 +40,28 @@ func (l *ChatLogic) Chat(in *pb.ChatRequest) (*pb.ChatResponse, error) {
 
 	// 优先处理系统/闲聊问题（在 detectIntent 之前兜底）
 	if isSystemQuestion(msgLower) {
+		response := l.chatResponse(message)
+		// 异步保存闲聊到记忆
+		go l.rememberMessage(in.GetUserId(), message, response)
 		return &pb.ChatResponse{
-			Response:   l.chatResponse(message),
+			Response:   response,
 			IsFinished: true,
 			Context:    in.Context,
 		}, nil
 	}
 
+	// 语义召回：搜索相似历史对话
+	recalledContext := l.recallSimilarHistory(in.GetUserId(), message)
+
+	// 合并召回的历史到上下文
+	enrichedCtx := mergeContext(in.GetContext(), recalledContext)
+
 	intent := detectIntent(msgLower)
 
-	response := l.handleIntent(intent, message, msgLower, in.GetContext())
+	response := l.handleIntent(intent, message, msgLower, enrichedCtx)
+
+	// 异步存入向量记忆
+	go l.rememberMessage(in.GetUserId(), message, response)
 
 	return &pb.ChatResponse{
 		Response:   response,
@@ -432,4 +449,111 @@ func extractLangAndQuery(msg string) (string, string) {
 	}
 
 	return lang, query
+}
+
+// === 语义记忆 ===
+
+const memoryCollection = "chat_history"
+
+// recallSimilarHistory 搜索与当前消息语义相似的历史对话
+// 失败时返回空字符串，不影响主流程
+func (l *ChatLogic) recallSimilarHistory(userId, message string) string {
+	if l.svcCtx.Embedding == nil || l.svcCtx.MemoryRpc == nil {
+		return ""
+	}
+
+	// 将用户消息向量化
+	queryVec, err := l.svcCtx.Embedding.Embed(l.ctx, message)
+	if err != nil {
+		log.Printf("[Memory] 向量化失败(召回): %v", err)
+		return ""
+	}
+
+	// 搜索相似历史
+	resp, err := l.svcCtx.MemoryRpc.SearchSimilar(l.ctx, &memorypb.SearchSimilarRequest{
+		Collection:  memoryCollection,
+		QueryVector: queryVec,
+		TopK:        3,
+	})
+	if err != nil {
+		log.Printf("[Memory] 相似搜索失败: %v", err)
+		return ""
+	}
+
+	if !resp.Success || len(resp.Results) == 0 {
+		return ""
+	}
+
+	// 格式化历史为上下文文本
+	var sb strings.Builder
+	sb.WriteString("【相关历史对话】\n")
+	for i, r := range resp.Results {
+		q := r.Metadata["q"]
+		a := r.Metadata["a"]
+		if q == "" {
+			continue
+		}
+		fmt.Fprintf(&sb, "%d. 问: %s\n", i+1, q)
+		if a != "" {
+			fmt.Fprintf(&sb, "   答: %s\n", a)
+		}
+	}
+	return sb.String()
+}
+
+// rememberMessage 异步将消息和回答存入向量记忆
+func (l *ChatLogic) rememberMessage(userId, message, response string) {
+	if l.svcCtx.Embedding == nil || l.svcCtx.MemoryRpc == nil {
+		return
+	}
+
+	// 使用独立 context，避免请求结束后被取消
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	vec, err := l.svcCtx.Embedding.Embed(ctx, message)
+	if err != nil {
+		log.Printf("[Memory] 向量化失败(存储): %v", err)
+		return
+	}
+
+	id := messageID(userId, message)
+	_, err = l.svcCtx.MemoryRpc.SaveVector(ctx, &memorypb.SaveVectorRequest{
+		Collection: memoryCollection,
+		Vectors: []*memorypb.VectorData{
+			{
+				Id:     id,
+				Vector: vec,
+				Metadata: map[string]string{
+					"q":       message,
+					"a":       response,
+					"user_id": userId,
+					"ts":      time.Now().UTC().Format(time.RFC3339),
+				},
+			},
+		},
+	})
+	if err != nil {
+		log.Printf("[Memory] 存储向量失败: %v", err)
+	}
+}
+
+// messageID 生成幂等的向量 ID
+func messageID(userId, message string) int64 {
+	h := fnv.New64a()
+	h.Write([]byte(userId + "|" + message))
+	return int64(h.Sum64())
+}
+
+// mergeContext 合并原始上下文和召回的历史上下文
+func mergeContext(original map[string]string, recalled string) map[string]string {
+	if recalled == "" {
+		return original
+	}
+	merged := make(map[string]string, len(original)+1)
+	for k, v := range original {
+		merged[k] = v
+	}
+	merged["history"] = recalled
+	return merged
 }
