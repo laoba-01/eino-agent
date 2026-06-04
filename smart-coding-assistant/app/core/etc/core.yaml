@@ -5,9 +5,9 @@ MCP:
   Endpoints: "tool-service=http://localhost:8081/mcp"
 
 Embedding:
-  Endpoint: https://api.deepseek.com/v1
-  ApiKey: ${DEEPSEEK_API_KEY}
-  Model: deepseek-chat
+  Endpoint: https://open.bigmodel.cn/api/paas/v4
+  ApiKey: ${EMBEDDING_API_KEY}
+  Model: embedding-2
 
 MemoryRpc:
   Endpoints:
