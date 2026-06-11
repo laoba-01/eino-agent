@@ -10,4 +10,5 @@ type Config struct {
 	Milvus struct {
 		Addr string
 	}
+	
 }
