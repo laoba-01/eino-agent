@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"smart-coding-assistant/app/core/internal/llm"
+	"smart-coding-assistant/pkg/llm"
 
 	"github.com/google/uuid"
 )

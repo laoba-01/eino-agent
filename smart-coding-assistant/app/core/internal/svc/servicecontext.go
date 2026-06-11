@@ -6,7 +6,7 @@ import (
 
 	"smart-coding-assistant/app/core/internal/config"
 	"smart-coding-assistant/app/core/internal/executor"
-	"smart-coding-assistant/app/core/internal/llm"
+	"smart-coding-assistant/pkg/llm"
 	"smart-coding-assistant/app/core/internal/mcp"
 	"smart-coding-assistant/app/core/internal/planner"
 )

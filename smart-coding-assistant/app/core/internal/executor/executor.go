@@ -7,7 +7,7 @@ import (
 
 	mcp "github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"smart-coding-assistant/app/core/internal/llm"
+	"smart-coding-assistant/pkg/llm"
 	mcpmgr "smart-coding-assistant/app/core/internal/mcp"
 	"smart-coding-assistant/app/core/internal/planner"
 )
