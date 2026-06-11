@@ -11,8 +11,6 @@ import (
 
 	memorypb "smart-coding-assistant/app/memory/pb"
 
-	"smart-coding-assistant/app/core/internal/executor"
-	"smart-coding-assistant/app/core/internal/planner"
 	"smart-coding-assistant/app/core/internal/svc"
 	"smart-coding-assistant/app/core/pb"
 )
@@ -30,9 +28,8 @@ func NewChatLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ChatLogic {
 
 // Chat 是 Agent 的主入口：
 //   1. RAG 语义召回历史
-//   2. Planner（LLM）生成执行计划
-//   3. Executor 逐步执行（MCP 工具 + LLM 推理）
-//   4. 异步回存对话到向量记忆
+//   2. Eino ReAct Agent 自主推理 + MCP 工具调用
+//   3. 异步回存对话到向量记忆
 func (l *ChatLogic) Chat(in *pb.ChatRequest) (*pb.ChatResponse, error) {
 	message := in.GetMessage()
 	msgLower := strings.ToLower(message)
@@ -41,59 +38,35 @@ func (l *ChatLogic) Chat(in *pb.ChatRequest) (*pb.ChatResponse, error) {
 	if isSystemQuestion(msgLower) {
 		response := l.chatResponse(message)
 		go l.rememberMessage(in.GetUserId(), message, response)
-		return &pb.ChatResponse{
-			Response:   response,
-			IsFinished: true,
-			Context:    in.Context,
-		}, nil
+		return &pb.ChatResponse{Response: response, IsFinished: true, Context: in.Context}, nil
 	}
 
 	// ========== RAG 语义召回 ==========
 	recalledHistory := l.recallSimilarHistory(in.GetUserId(), message)
 	enrichedCtx := mergeContext(in.GetContext(), recalledHistory)
 
-	// ========== Agent: 收集可用工具 ==========
-	availableTools := l.collectTools()
+	// ========== Eino Agent ==========
+	agentInput := message
+	if recalledHistory != "" {
+		agentInput = fmt.Sprintf("【历史上下文】\n%s\n\n【当前问题】\n%s", recalledHistory, message)
+	}
 
-	// ========== Agent: Planner 生成执行计划 ==========
-	plan, err := l.svcCtx.Planner.GeneratePlan(l.ctx, message, enrichedCtx, availableTools)
+	response, err := l.svcCtx.Agent.Run(l.ctx, agentInput)
 	if err != nil {
-		// 降级：计划失败时用 LLM 直接回答
-		response := fmt.Sprintf("抱歉，无法制定执行计划: %v\n\n请尝试更具体地描述你的问题。", err)
-		go l.rememberMessage(in.GetUserId(), message, response)
-		return &pb.ChatResponse{
-			Response:   response,
-			IsFinished: true,
-		}, nil
+		response = fmt.Sprintf("抱歉，执行过程中出现错误: %v\n\n请尝试更具体地描述你的问题。", err)
 	}
 
-	// ========== Agent: Executor 逐步执行 ==========
-	resp := &pb.ChatResponse{
-		IsFinished: false,
-		Plan: &pb.PlanInfo{
-			PlanId:     plan.ID,
-			Goal:       plan.Goal,
-			TotalSteps: int32(len(plan.Steps)),
-		},
-		Context: in.Context,
-	}
-
-	reporter := &chatReporter{resp: resp, totalSteps: len(plan.Steps)}
-	if err := l.svcCtx.Executor.Execute(l.ctx, plan, reporter); err != nil {
-		resp.Response = fmt.Sprintf("执行终止: %v", err)
-		resp.IsFinished = true
-		go l.rememberMessage(in.GetUserId(), message, resp.Response)
-		return resp, nil
-	}
-
-	// ========== 构建最终响应 + 异步存储 ==========
-	response := l.buildFinalResponse(plan)
-	resp.Response = response
-	resp.IsFinished = true
-
+	// ========== 异步存储 ==========
 	go l.rememberMessage(in.GetUserId(), message, response)
 
-	return resp, nil
+	// 清理 context 引用避免泄露
+	_ = enrichedCtx
+
+	return &pb.ChatResponse{
+		Response:   response,
+		IsFinished: true,
+		Context:    in.Context,
+	}, nil
 }
 
 // ==============================
@@ -117,13 +90,11 @@ func isSystemQuestion(msgLower string) bool {
 func (l *ChatLogic) chatResponse(message string) string {
 	msgLower := strings.ToLower(message)
 	if strings.Contains(msgLower, "模型") || strings.Contains(msgLower, "model") {
-		return "我是一个 AI Agent，使用 Planner + Executor 架构。\n\n" +
-			"我会理解你的问题后自主制定执行计划，按步骤调用工具并推理，最终给出答案。\n\n" +
-			"支持：代码错误分析 / 语法查询 / 编程解题 / 多步推理。"
+		return "我是一个 AI Agent，基于 Eino ReAct 架构，具备自主规划、MCP 工具调用和语义记忆能力。\n\n" +
+			"我会理解你的问题后自主调用合适的工具，进行多步推理，最终给出答案。"
 	}
 	if strings.Contains(msgLower, "你是谁") || strings.Contains(msgLower, "你的名字") {
-		return "我是**智能编程学习助手** 🤖，一个基于 Plan-and-Execute 架构的 AI Agent。\n\n" +
-			"具备自主规划、MCP 工具调用和语义记忆能力。"
+		return "我是**智能编程学习助手** 🤖，一个基于 Eino ReAct + go-zero 的 AI Agent。"
 	}
 	if strings.Contains(msgLower, "hi") || strings.Contains(msgLower, "hello") || strings.Contains(msgLower, "你好") {
 		return "你好！👋 我是智能编程学习助手，有什么编程问题需要帮助吗？"
@@ -137,12 +108,11 @@ func (l *ChatLogic) chatResponse(message string) string {
 func (l *ChatLogic) defaultResponse() string {
 	var sb strings.Builder
 	sb.WriteString("👋 你好！我是 AI Agent 编程助手。\n\n")
-	sb.WriteString("我可以自主规划并执行复杂任务：\n\n")
-	sb.WriteString("1. **分析代码错误** — 发送包含错误信息和代码的消息\n")
-	sb.WriteString("2. **查询语法概念** — 询问编程语言语法\n")
-	sb.WriteString("3. **生成解题方案** — 描述编程问题，获取解题思路和代码\n")
-	sb.WriteString("4. **多步推理任务** — 我会自行分解目标并逐步完成\n\n")
-
+	sb.WriteString("我可以自主调用工具完成：\n\n")
+	sb.WriteString("- 分析代码错误\n")
+	sb.WriteString("- 查询语法概念\n")
+	sb.WriteString("- 生成解题方案\n")
+	sb.WriteString("- 多步推理任务\n\n")
 	if l.svcCtx.MCPClient != nil {
 		allTools := l.svcCtx.MCPClient.ListAllTools(l.ctx)
 		if len(allTools) > 0 {
@@ -158,91 +128,25 @@ func (l *ChatLogic) defaultResponse() string {
 }
 
 // ==============================
-// Agent: 工具收集
+// RAG: Eino Embedder + MemoryRpc
 // ==============================
 
-func (l *ChatLogic) collectTools() []string {
-	var tools []string
-	if l.svcCtx.MCPClient == nil {
-		return tools
-	}
-	allTools := l.svcCtx.MCPClient.ListAllTools(l.ctx)
-	for _, serverTools := range allTools {
-		for _, t := range serverTools {
-			tools = append(tools, t.Name)
-		}
-	}
-	return tools
-}
-
-// ==============================
-// Agent: 最终响应构建
-// ==============================
-
-func (l *ChatLogic) buildFinalResponse(plan *planner.Plan) string {
-	var sb strings.Builder
-	fmt.Fprintf(&sb, "## %s\n\n", plan.Goal)
-	for _, step := range plan.Steps {
-		icon := "✅"
-		if step.Status == string(planner.StepStatusFailed) {
-			icon = "❌"
-		}
-		fmt.Fprintf(&sb, "%s **步骤%d**: %s\n", icon, step.Index, step.Description)
-		if step.Result != "" {
-			fmt.Fprintf(&sb, "   %s\n\n", step.Result)
-		}
-		if step.Error != "" {
-			fmt.Fprintf(&sb, "   错误: %s\n\n", step.Error)
-		}
-	}
-	return sb.String()
-}
-
-// ==============================
-// Agent: 步骤进度回调
-// ==============================
-
-type chatReporter struct {
-	resp       *pb.ChatResponse
-	totalSteps int
-}
-
-func (r *chatReporter) OnStepStart(step planner.Step) {
-	r.resp.Response = fmt.Sprintf("正在执行步骤 %d/%d: %s", step.Index, r.totalSteps, step.Description)
-}
-
-func (r *chatReporter) OnStepDone(step planner.Step) {
-	r.resp.Steps = append(r.resp.Steps, &pb.StepResult{
-		Index:       int32(step.Index),
-		Description: step.Description,
-		Status:      step.Status,
-		Result:      step.Result,
-		Error:       step.Error,
-	})
-	r.resp.Plan.CompletedSteps = int32(len(r.resp.Steps))
-}
-
-func (r *chatReporter) OnAllDone(plan planner.Plan) {
-	r.resp.Plan.CompletedSteps = int32(r.totalSteps)
-}
-
-var _ executor.StepReporter = (*chatReporter)(nil)
-
-// ==============================
-// RAG: 语义记忆
-// ==============================
-
-// recallSimilarHistory 搜索与当前消息语义相似的历史对话
 func (l *ChatLogic) recallSimilarHistory(userId, message string) string {
-	if l.svcCtx.Embedding == nil || l.svcCtx.MemoryRpc == nil {
+	if l.svcCtx.Embedder == nil || l.svcCtx.MemoryRpc == nil {
 		return ""
 	}
 
-	queryVec, err := l.svcCtx.Embedding.Embed(l.ctx, message)
-	if err != nil {
-		log.Printf("[Memory] 向量化失败(召回): %v", err)
+	// Eino Embedder: [][]float64
+	vecs, err := l.svcCtx.Embedder.EmbedStrings(l.ctx, []string{message})
+	if err != nil || len(vecs) == 0 {
+		if err != nil {
+			log.Printf("[Memory] 向量化失败(召回): %v", err)
+		}
 		return ""
 	}
+
+	// [][]float64 → []float32
+	queryVec := float64sToFloat32s(vecs[0])
 
 	resp, err := l.svcCtx.MemoryRpc.SearchSimilar(l.ctx, &memorypb.SearchSimilarRequest{
 		Collection:  memoryCollection,
@@ -258,9 +162,7 @@ func (l *ChatLogic) recallSimilarHistory(userId, message string) string {
 	for i, r := range resp.Results {
 		q := r.Metadata["q"]
 		a := r.Metadata["a"]
-		if q == "" {
-			continue
-		}
+		if q == "" { continue }
 		fmt.Fprintf(&sb, "%d. 问: %s\n", i+1, q)
 		if a != "" {
 			fmt.Fprintf(&sb, "   答: %s\n", a)
@@ -269,28 +171,30 @@ func (l *ChatLogic) recallSimilarHistory(userId, message string) string {
 	return sb.String()
 }
 
-// rememberMessage 异步将对话存入向量记忆
 func (l *ChatLogic) rememberMessage(userId, message, response string) {
-	if l.svcCtx.Embedding == nil || l.svcCtx.MemoryRpc == nil {
+	if l.svcCtx.Embedder == nil || l.svcCtx.MemoryRpc == nil {
 		return
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	vec, err := l.svcCtx.Embedding.Embed(ctx, message)
-	if err != nil {
-		log.Printf("[Memory] 向量化失败(存储): %v", err)
+	vecs, err := l.svcCtx.Embedder.EmbedStrings(ctx, []string{message})
+	if err != nil || len(vecs) == 0 {
+		if err != nil {
+			log.Printf("[Memory] 向量化失败(存储): %v", err)
+		}
 		return
 	}
 
+	queryVec := float64sToFloat32s(vecs[0])
 	id := messageID(userId, message)
 	_, err = l.svcCtx.MemoryRpc.SaveVector(ctx, &memorypb.SaveVectorRequest{
 		Collection: memoryCollection,
 		Vectors: []*memorypb.VectorData{
 			{
 				Id:     id,
-				Vector: vec,
+				Vector: queryVec,
 				Metadata: map[string]string{
 					"q":       message,
 					"a":       response,
@@ -303,6 +207,14 @@ func (l *ChatLogic) rememberMessage(userId, message, response string) {
 	if err != nil {
 		log.Printf("[Memory] 存储向量失败: %v", err)
 	}
+}
+
+func float64sToFloat32s(in []float64) []float32 {
+	out := make([]float32, len(in))
+	for i, v := range in {
+		out[i] = float32(v)
+	}
+	return out
 }
 
 func messageID(userId, message string) int64 {
@@ -324,7 +236,7 @@ func mergeContext(original map[string]string, recalled string) map[string]string
 }
 
 // ==============================
-// MCP 工具结果格式化（保留供 Executor 输出）
+// MCP 工具结果格式化（保留）
 // ==============================
 
 func formatToolResult(result interface{}, title string) string {
