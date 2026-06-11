@@ -12,3 +12,8 @@ Embedding:
 MemoryRpc:
   Endpoints:
   - localhost:50053
+
+LLM:
+  Endpoint: "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
+  APIKey: ""
+  Model: "deepseek-v4-pro"

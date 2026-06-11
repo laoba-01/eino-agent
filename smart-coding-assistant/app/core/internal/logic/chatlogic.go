@@ -11,19 +11,13 @@ import (
 
 	memorypb "smart-coding-assistant/app/memory/pb"
 
+	"smart-coding-assistant/app/core/internal/executor"
+	"smart-coding-assistant/app/core/internal/planner"
 	"smart-coding-assistant/app/core/internal/svc"
 	"smart-coding-assistant/app/core/pb"
 )
 
-type Intent string
-
-const (
-	IntentAnalyzeCode     Intent = "analyze_code"
-	IntentQuerySyntax     Intent = "query_syntax"
-	IntentGenerateProblem Intent = "generate_problem"
-	IntentChat            Intent = "chat"
-	IntentUnknown         Intent = "unknown"
-)
+const memoryCollection = "chat_history"
 
 type ChatLogic struct {
 	ctx    context.Context
@@ -34,14 +28,18 @@ func NewChatLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ChatLogic {
 	return &ChatLogic{ctx: ctx, svcCtx: svcCtx}
 }
 
+// Chat 是 Agent 的主入口：
+//   1. RAG 语义召回历史
+//   2. Planner（LLM）生成执行计划
+//   3. Executor 逐步执行（MCP 工具 + LLM 推理）
+//   4. 异步回存对话到向量记忆
 func (l *ChatLogic) Chat(in *pb.ChatRequest) (*pb.ChatResponse, error) {
 	message := in.GetMessage()
 	msgLower := strings.ToLower(message)
 
-	// 优先处理系统/闲聊问题（在 detectIntent 之前兜底）
+	// ========== 闲聊快速路径 ==========
 	if isSystemQuestion(msgLower) {
 		response := l.chatResponse(message)
-		// 异步保存闲聊到记忆
 		go l.rememberMessage(in.GetUserId(), message, response)
 		return &pb.ChatResponse{
 			Response:   response,
@@ -50,441 +48,211 @@ func (l *ChatLogic) Chat(in *pb.ChatRequest) (*pb.ChatResponse, error) {
 		}, nil
 	}
 
-	// 语义召回：搜索相似历史对话
-	recalledContext := l.recallSimilarHistory(in.GetUserId(), message)
+	// ========== RAG 语义召回 ==========
+	recalledHistory := l.recallSimilarHistory(in.GetUserId(), message)
+	enrichedCtx := mergeContext(in.GetContext(), recalledHistory)
 
-	// 合并召回的历史到上下文
-	enrichedCtx := mergeContext(in.GetContext(), recalledContext)
+	// ========== Agent: 收集可用工具 ==========
+	availableTools := l.collectTools()
 
-	intent := detectIntent(msgLower)
+	// ========== Agent: Planner 生成执行计划 ==========
+	plan, err := l.svcCtx.Planner.GeneratePlan(l.ctx, message, enrichedCtx, availableTools)
+	if err != nil {
+		// 降级：计划失败时用 LLM 直接回答
+		response := fmt.Sprintf("抱歉，无法制定执行计划: %v\n\n请尝试更具体地描述你的问题。", err)
+		go l.rememberMessage(in.GetUserId(), message, response)
+		return &pb.ChatResponse{
+			Response:   response,
+			IsFinished: true,
+		}, nil
+	}
 
-	response := l.handleIntent(intent, message, msgLower, enrichedCtx)
+	// ========== Agent: Executor 逐步执行 ==========
+	resp := &pb.ChatResponse{
+		IsFinished: false,
+		Plan: &pb.PlanInfo{
+			PlanId:     plan.ID,
+			Goal:       plan.Goal,
+			TotalSteps: int32(len(plan.Steps)),
+		},
+		Context: in.Context,
+	}
 
-	// 异步存入向量记忆
+	reporter := &chatReporter{resp: resp, totalSteps: len(plan.Steps)}
+	if err := l.svcCtx.Executor.Execute(l.ctx, plan, reporter); err != nil {
+		resp.Response = fmt.Sprintf("执行终止: %v", err)
+		resp.IsFinished = true
+		go l.rememberMessage(in.GetUserId(), message, resp.Response)
+		return resp, nil
+	}
+
+	// ========== 构建最终响应 + 异步存储 ==========
+	response := l.buildFinalResponse(plan)
+	resp.Response = response
+	resp.IsFinished = true
+
 	go l.rememberMessage(in.GetUserId(), message, response)
 
-	return &pb.ChatResponse{
-		Response:   response,
-		IsFinished: true,
-		Context:    in.Context,
-	}, nil
+	return resp, nil
 }
 
-// isSystemQuestion 在 detectIntent 之前做一层兜底，避免因编译/缓存问题导致系统问题漏入工具调用
-// 注意：使用 ASCII 和常见中文字符匹配，但某些环境下中文字符可能在传输中被损坏
-// 因此匹配逻辑优先基于英文/拼音，中文作为辅助
+// ==============================
+// 闲聊 / 兜底
+// ==============================
+
 func isSystemQuestion(msgLower string) bool {
-	// ASCII 模式（最可靠）
 	asciiPatterns := []string{"hi", "hello", "thanks", "thank", "help", "what can you do",
 		"who are you", "what are you", "your name"}
 	for _, kw := range asciiPatterns {
-		if strings.Contains(msgLower, kw) {
-			return true
-		}
+		if strings.Contains(msgLower, kw) { return true }
 	}
-
-	// 中文模式 — 逐个字节匹配，即使终端乱码也能工作
-	// "你是什么" "什么模型" "你是谁" "你叫什么" "你的名字"
-	// "你能做什么" "有什么功能" "你好" "谢谢" "在吗"
-	cnPatterns := []string{
-		"你是什么", "什么模型", "你是谁", "你叫什么", "你的名字",
-		"你能做什么", "有什么功能", "你好", "谢谢", "在吗",
-		"模型", // 单独匹配"模型"更宽泛
-	}
+	cnPatterns := []string{"你是什么", "什么模型", "你是谁", "你叫什么", "你的名字",
+		"你能做什么", "有什么功能", "你好", "谢谢", "在吗", "模型"}
 	for _, kw := range cnPatterns {
-		if strings.Contains(msgLower, kw) {
-			return true
-		}
+		if strings.Contains(msgLower, kw) { return true }
 	}
 	return false
 }
 
-// detectIntent 根据用户消息关键词判断意图
-func detectIntent(msgLower string) Intent {
-	// 0. 系统/元问题：关于系统本身的问题，优先级最高
-	chatKeywords := []string{"你是什么", "什么模型", "你是谁", "你叫什么", "你的名字",
-		"你能做什么", "有什么功能", "你是什么模型", "hi", "hello", "你好", "thanks", "谢谢"}
-	for _, kw := range chatKeywords {
-		if strings.Contains(msgLower, kw) {
-			return IntentChat
-		}
-	}
-
-	// 1. 代码错误分析：包含错误相关关键词
-	errorKeywords := []string{"error", "bug", "报错", "错误", "fix", "修复", "exception", "panic", "crash",
-		"not working", "不工作", "failed", "失败", "undefined", "null pointer", "traceback"}
-	for _, kw := range errorKeywords {
-		if strings.Contains(msgLower, kw) {
-			return IntentAnalyzeCode
-		}
-	}
-
-	// 2. 语法查询：必须同时包含「疑问词 + 编程概念」或「明确的编程概念查询」
-	//    单独 "是什么" "怎么用" 不触发，防止误匹配
-	syntaxConcepts := []string{"decorator", "装饰器", "async", "await", "closure", "闭包",
-		"goroutine", "channel", "generator", "生成器", "interface", "接口",
-		"指针", "pointer", "继承", "inheritance", "多态", "polymorphism", "递归", "recursion",
-		"泛型", "generic", "协程", "goroutine", "promise", "迭代器", "iterator",
-		"list comprehension", "列表推导", "lambda", "正则", "regex", "序列化", "反序列化"}
-	for _, c := range syntaxConcepts {
-		if strings.Contains(msgLower, c) {
-			return IntentQuerySyntax
-		}
-	}
-	// 包含 what is / explain + programming context
-	syntaxAskWords := []string{"what is", "how to use", "explain", "如何使用", "语法", "syntax", "用法", "是什么意思"}
-	programmingContext := []string{"python", "go ", "golang", "javascript", "js ", "typescript", "java", "rust",
-		"c++", "cpp", "函数", "function", "变量", "variable", "类型", "class", "类", "方法", "method",
-		"模块", "module", "包", "package", "循环", "loop", "条件", "condition", "数组", "array"}
-	hasAskWord := false
-	for _, kw := range syntaxAskWords {
-		if strings.Contains(msgLower, kw) {
-			hasAskWord = true
-			break
-		}
-	}
-	hasProgCtx := false
-	for _, kw := range programmingContext {
-		if strings.Contains(msgLower, kw) {
-			hasProgCtx = true
-			break
-		}
-	}
-	if hasAskWord && hasProgCtx {
-		return IntentQuerySyntax
-	}
-
-	// 3. 解题：要求生成代码/解题
-	solveKeywords := []string{"solve", "解题", "写一个", "实现", "implement", "solution", "解决方案",
-		"算法", "algorithm", "write code", "编写", "generate", "生成", "two sum", "排序",
-		"搜索", "反转", "链表", "二叉树", "动态规划", "dp ", "dp)"}
-	for _, kw := range solveKeywords {
-		if strings.Contains(msgLower, kw) {
-			return IntentGenerateProblem
-		}
-	}
-
-	return IntentUnknown
-}
-
-// handleIntent 根据意图调用对应的 MCP 工具
-func (l *ChatLogic) handleIntent(intent Intent, message, msgLower string, ctx map[string]string) string {
-	switch intent {
-	case IntentChat:
-		return l.chatResponse(message)
-
-	case IntentAnalyzeCode:
-		return l.callAnalyzeCodeError(message, ctx)
-
-	case IntentQuerySyntax:
-		return l.callQuerySyntax(message, ctx)
-
-	case IntentGenerateProblem:
-		return l.callGenerateProblemSolution(message, ctx)
-
-	default:
-		return l.defaultResponse()
-	}
-}
-
-// callAnalyzeCodeError 调用代码错误分析工具
-func (l *ChatLogic) callAnalyzeCodeError(message string, ctx map[string]string) string {
-	if l.svcCtx.MCPClient == nil {
-		return "MCP 客户端未初始化，无法分析代码错误。"
-	}
-
-	// 从消息中提取代码、错误信息和语言
-	code := extractCodeBlock(message)
-	errMsg := extractErrorMsg(message)
-	lang := detectLanguage(message)
-	if l, ok := ctx["language"]; ok && l != "" {
-		lang = l
-	}
-
-	result, err := l.svcCtx.MCPClient.CallTool(l.ctx, "tool-service", "analyze_code_error", map[string]interface{}{
-		"code":          code,
-		"error_message": errMsg,
-		"language":      lang,
-	})
-	if err != nil {
-		return "调用代码分析工具失败: " + err.Error()
-	}
-
-	return formatToolResult(result, "代码错误分析")
-}
-
-// callQuerySyntax 调用语法查询工具
-func (l *ChatLogic) callQuerySyntax(message string, ctx map[string]string) string {
-	if l.svcCtx.MCPClient == nil {
-		return "MCP 客户端未初始化，无法查询语法。"
-	}
-
-	lang, query := extractLangAndQuery(message)
-	if l, ok := ctx["language"]; ok && l != "" {
-		lang = l
-	}
-
-	result, err := l.svcCtx.MCPClient.CallTool(l.ctx, "tool-service", "query_syntax", map[string]interface{}{
-		"language": lang,
-		"query":    query,
-		"context":  message,
-	})
-	if err != nil {
-		return "语法查询失败: " + err.Error()
-	}
-
-	return formatToolResult(result, "语法查询")
-}
-
-// callGenerateProblemSolution 调用解题方案生成工具
-func (l *ChatLogic) callGenerateProblemSolution(message string, ctx map[string]string) string {
-	if l.svcCtx.MCPClient == nil {
-		return "MCP 客户端未初始化，无法生成解题方案。"
-	}
-
-	lang := detectLanguage(message)
-	if l, ok := ctx["language"]; ok && l != "" {
-		lang = l
-	}
-	difficulty := "medium"
-	if d, ok := ctx["difficulty"]; ok && d != "" {
-		difficulty = d
-	}
-
-	result, err := l.svcCtx.MCPClient.CallTool(l.ctx, "tool-service", "generate_problem_solution", map[string]interface{}{
-		"problem":    message,
-		"difficulty": difficulty,
-		"language":   lang,
-	})
-	if err != nil {
-		return "生成解题方案失败: " + err.Error()
-	}
-
-	return formatToolResult(result, "解题方案")
-}
-
-// chatResponse 处理闲聊/系统性问题
 func (l *ChatLogic) chatResponse(message string) string {
 	msgLower := strings.ToLower(message)
-
 	if strings.Contains(msgLower, "模型") || strings.Contains(msgLower, "model") {
-		return "我目前是基于规则匹配的编程学习助手，尚未接入大语言模型。\n\n" +
-			"我能通过关键词识别你的意图，并调用对应的工具来帮你：\n" +
-			"- 分析代码错误\n" +
-			"- 查询编程语法\n" +
-			"- 生成解题方案\n\n" +
-			"未来接入 LLM 后会有更强的对话能力！"
+		return "我是一个 AI Agent，使用 Planner + Executor 架构。\n\n" +
+			"我会理解你的问题后自主制定执行计划，按步骤调用工具并推理，最终给出答案。\n\n" +
+			"支持：代码错误分析 / 语法查询 / 编程解题 / 多步推理。"
 	}
-	if strings.Contains(msgLower, "你是谁") || strings.Contains(msgLower, "你叫什么") || strings.Contains(msgLower, "你的名字") {
-		return "我是**智能编程学习助手** 🤖，一个帮助你学习编程的 AI Agent。\n\n" +
-			"我可以分析代码错误、解释语法概念、生成解题方案。试试问我编程相关的问题吧！"
-	}
-	if strings.Contains(msgLower, "你能做什么") || strings.Contains(msgLower, "有什么功能") || strings.Contains(msgLower, "help") {
-		return l.defaultResponse()
+	if strings.Contains(msgLower, "你是谁") || strings.Contains(msgLower, "你的名字") {
+		return "我是**智能编程学习助手** 🤖，一个基于 Plan-and-Execute 架构的 AI Agent。\n\n" +
+			"具备自主规划、MCP 工具调用和语义记忆能力。"
 	}
 	if strings.Contains(msgLower, "hi") || strings.Contains(msgLower, "hello") || strings.Contains(msgLower, "你好") {
-		return "你好！👋 我是智能编程学习助手，有什么编程问题需要帮助吗？\n\n" +
-			"- 遇到代码报错？把错误信息发给我\n" +
-			"- 想了解某个语法？直接问我\n" +
-			"- 需要解题思路？告诉我题目"
+		return "你好！👋 我是智能编程学习助手，有什么编程问题需要帮助吗？"
 	}
-	if strings.Contains(msgLower, "thanks") || strings.Contains(msgLower, "谢谢") || strings.Contains(msgLower, "thank") {
+	if strings.Contains(msgLower, "thanks") || strings.Contains(msgLower, "谢谢") {
 		return "不客气！有任何编程问题随时问我 😊"
 	}
-
 	return l.defaultResponse()
 }
 
-// defaultResponse 无明确意图时的默认响应
 func (l *ChatLogic) defaultResponse() string {
 	var sb strings.Builder
-	sb.WriteString("👋 你好！我是智能编程学习助手。\n\n")
-	sb.WriteString("我可以帮你：\n\n")
+	sb.WriteString("👋 你好！我是 AI Agent 编程助手。\n\n")
+	sb.WriteString("我可以自主规划并执行复杂任务：\n\n")
 	sb.WriteString("1. **分析代码错误** — 发送包含错误信息和代码的消息\n")
-	sb.WriteString("   示例: `我的代码报错了 TypeError: ...`\n\n")
 	sb.WriteString("2. **查询语法概念** — 询问编程语言语法\n")
-	sb.WriteString("   示例: `解释一下 Python 的装饰器`\n\n")
 	sb.WriteString("3. **生成解题方案** — 描述编程问题，获取解题思路和代码\n")
-	sb.WriteString("   示例: `用 Go 实现 two sum 算法`\n\n")
+	sb.WriteString("4. **多步推理任务** — 我会自行分解目标并逐步完成\n\n")
 
 	if l.svcCtx.MCPClient != nil {
 		allTools := l.svcCtx.MCPClient.ListAllTools(l.ctx)
 		if len(allTools) > 0 {
-			sb.WriteString("---\n**可用工具**:\n")
+			sb.WriteString("---\n**可用 MCP 工具**:\n")
 			for serverName, tools := range allTools {
 				for _, t := range tools {
-					sb.WriteString("- `" + t.Name + "` (" + serverName + "): " + t.Description + "\n")
+					sb.WriteString(fmt.Sprintf("- `%s` (%s): %s\n", t.Name, serverName, t.Description))
 				}
 			}
 		}
 	}
-
 	return sb.String()
 }
 
-// formatToolResult 格式化工具调用结果为可读文本
-func formatToolResult(result interface{}, title string) string {
+// ==============================
+// Agent: 工具收集
+// ==============================
+
+func (l *ChatLogic) collectTools() []string {
+	var tools []string
+	if l.svcCtx.MCPClient == nil {
+		return tools
+	}
+	allTools := l.svcCtx.MCPClient.ListAllTools(l.ctx)
+	for _, serverTools := range allTools {
+		for _, t := range serverTools {
+			tools = append(tools, t.Name)
+		}
+	}
+	return tools
+}
+
+// ==============================
+// Agent: 最终响应构建
+// ==============================
+
+func (l *ChatLogic) buildFinalResponse(plan *planner.Plan) string {
 	var sb strings.Builder
-	sb.WriteString("## " + title + "\n\n")
-
-	if result == nil {
-		return sb.String() + "(无结果)"
-	}
-
-	// mcp.CallToolResult 包含 Content 数组
-	type contentItem struct {
-		Type string `json:"type"`
-		Text string `json:"text"`
-	}
-	type toolResult struct {
-		Content []contentItem `json:"content"`
-	}
-
-	// 先尝试序列化整体结果
-	jsonBytes, err := json.Marshal(result)
-	if err != nil {
-		return sb.String() + fmt.Sprintf("%v", result)
-	}
-
-	var tr toolResult
-	if err := json.Unmarshal(jsonBytes, &tr); err == nil {
-		for _, c := range tr.Content {
-			if c.Type == "text" {
-				// 尝试美化 JSON 文本
-				var parsed interface{}
-				if json.Unmarshal([]byte(c.Text), &parsed) == nil {
-					prettyJSON, _ := json.MarshalIndent(parsed, "", "  ")
-					sb.WriteString(string(prettyJSON))
-					sb.WriteString("\n")
-				} else {
-					sb.WriteString(c.Text)
-					sb.WriteString("\n")
-				}
-			}
+	fmt.Fprintf(&sb, "## %s\n\n", plan.Goal)
+	for _, step := range plan.Steps {
+		icon := "✅"
+		if step.Status == string(planner.StepStatusFailed) {
+			icon = "❌"
 		}
-		return sb.String()
-	}
-
-	return sb.String() + fmt.Sprintf("%v", result)
-}
-
-// === 辅助函数 ===
-
-// extractCodeBlock 从消息中提取代码块
-func extractCodeBlock(msg string) string {
-	// 查找 ``` 包围的代码块
-	start := strings.Index(msg, "```")
-	if start == -1 {
-		return msg // 无代码块则返回全部文本
-	}
-	start += 3
-	// 跳过语言标识
-	if idx := strings.Index(msg[start:], "\n"); idx != -1 {
-		start += idx + 1
-	}
-	end := strings.Index(msg[start:], "```")
-	if end == -1 {
-		return msg[start:]
-	}
-	return msg[start : start+end]
-}
-
-// extractErrorMsg 从消息中提取错误信息
-func extractErrorMsg(msg string) string {
-	errorMarkers := []string{"Error:", "error:", "错误:", "错误信息:", "报错:", "panic:", "Exception:", "Traceback"}
-	for _, marker := range errorMarkers {
-		if idx := strings.Index(msg, marker); idx != -1 {
-			rest := msg[idx:]
-			if end := strings.Index(rest, "\n\n"); end != -1 {
-				return rest[:end]
-			}
-			return rest
+		fmt.Fprintf(&sb, "%s **步骤%d**: %s\n", icon, step.Index, step.Description)
+		if step.Result != "" {
+			fmt.Fprintf(&sb, "   %s\n\n", step.Result)
+		}
+		if step.Error != "" {
+			fmt.Fprintf(&sb, "   错误: %s\n\n", step.Error)
 		}
 	}
-	return msg
+	return sb.String()
 }
 
-// detectLanguage 检测消息中提到的编程语言
-func detectLanguage(msg string) string {
-	msgLower := strings.ToLower(msg)
-	languages := []string{"python", "go", "golang", "javascript", "js", "typescript", "ts", "java", "rust", "c++", "cpp", "c#", "csharp", "ruby", "php", "swift", "kotlin", "scala"}
-	for _, lang := range languages {
-		if strings.Contains(msgLower, lang) {
-			switch lang {
-			case "golang":
-				return "go"
-			case "js":
-				return "javascript"
-			case "ts":
-				return "typescript"
-			case "cpp":
-				return "c++"
-			case "csharp":
-				return "c#"
-			default:
-				return lang
-			}
-		}
-	}
-	return "go" // 默认
+// ==============================
+// Agent: 步骤进度回调
+// ==============================
+
+type chatReporter struct {
+	resp       *pb.ChatResponse
+	totalSteps int
 }
 
-// extractLangAndQuery 从消息中提取语言和查询概念
-func extractLangAndQuery(msg string) (string, string) {
-	lang := detectLanguage(msg)
-	msgLower := strings.ToLower(msg)
-
-	// 常见查询模式: "解释 X 的 Y", "what is X in Go", "如何使用 X"
-	query := msg // 默认为整个消息
-
-	// 尝试提取具体查询概念
-	concepts := []string{"decorator", "async", "await", "closure", "闭包", "goroutine", "channel",
-		"generator", "interface", "接口", "pointer", "指针", "inheritance", "继承",
-		"polymorphism", "多态", "recursion", "递归", "generic", "泛型"}
-	for _, c := range concepts {
-		if strings.Contains(msgLower, c) {
-			query = c
-			break
-		}
-	}
-
-	return lang, query
+func (r *chatReporter) OnStepStart(step planner.Step) {
+	r.resp.Response = fmt.Sprintf("正在执行步骤 %d/%d: %s", step.Index, r.totalSteps, step.Description)
 }
 
-// === 语义记忆 ===
+func (r *chatReporter) OnStepDone(step planner.Step) {
+	r.resp.Steps = append(r.resp.Steps, &pb.StepResult{
+		Index:       int32(step.Index),
+		Description: step.Description,
+		Status:      step.Status,
+		Result:      step.Result,
+		Error:       step.Error,
+	})
+	r.resp.Plan.CompletedSteps = int32(len(r.resp.Steps))
+}
 
-const memoryCollection = "chat_history"
+func (r *chatReporter) OnAllDone(plan planner.Plan) {
+	r.resp.Plan.CompletedSteps = int32(r.totalSteps)
+}
+
+var _ executor.StepReporter = (*chatReporter)(nil)
+
+// ==============================
+// RAG: 语义记忆
+// ==============================
 
 // recallSimilarHistory 搜索与当前消息语义相似的历史对话
-// 失败时返回空字符串，不影响主流程
 func (l *ChatLogic) recallSimilarHistory(userId, message string) string {
 	if l.svcCtx.Embedding == nil || l.svcCtx.MemoryRpc == nil {
 		return ""
 	}
 
-	// 将用户消息向量化
 	queryVec, err := l.svcCtx.Embedding.Embed(l.ctx, message)
 	if err != nil {
 		log.Printf("[Memory] 向量化失败(召回): %v", err)
 		return ""
 	}
 
-	// 搜索相似历史
 	resp, err := l.svcCtx.MemoryRpc.SearchSimilar(l.ctx, &memorypb.SearchSimilarRequest{
 		Collection:  memoryCollection,
 		QueryVector: queryVec,
 		TopK:        3,
 	})
-	if err != nil {
-		log.Printf("[Memory] 相似搜索失败: %v", err)
+	if err != nil || !resp.Success || len(resp.Results) == 0 {
 		return ""
 	}
 
-	if !resp.Success || len(resp.Results) == 0 {
-		return ""
-	}
-
-	// 格式化历史为上下文文本
 	var sb strings.Builder
 	sb.WriteString("【相关历史对话】\n")
 	for i, r := range resp.Results {
@@ -501,13 +269,12 @@ func (l *ChatLogic) recallSimilarHistory(userId, message string) string {
 	return sb.String()
 }
 
-// rememberMessage 异步将消息和回答存入向量记忆
+// rememberMessage 异步将对话存入向量记忆
 func (l *ChatLogic) rememberMessage(userId, message, response string) {
 	if l.svcCtx.Embedding == nil || l.svcCtx.MemoryRpc == nil {
 		return
 	}
 
-	// 使用独立 context，避免请求结束后被取消
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
@@ -538,14 +305,12 @@ func (l *ChatLogic) rememberMessage(userId, message, response string) {
 	}
 }
 
-// messageID 生成幂等的向量 ID
 func messageID(userId, message string) int64 {
 	h := fnv.New64a()
 	h.Write([]byte(userId + "|" + message))
 	return int64(h.Sum64())
 }
 
-// mergeContext 合并原始上下文和召回的历史上下文
 func mergeContext(original map[string]string, recalled string) map[string]string {
 	if recalled == "" {
 		return original
@@ -556,4 +321,43 @@ func mergeContext(original map[string]string, recalled string) map[string]string
 	}
 	merged["history"] = recalled
 	return merged
+}
+
+// ==============================
+// MCP 工具结果格式化（保留供 Executor 输出）
+// ==============================
+
+func formatToolResult(result interface{}, title string) string {
+	var sb strings.Builder
+	sb.WriteString("## " + title + "\n\n")
+	if result == nil {
+		return sb.String() + "(无结果)"
+	}
+	jsonBytes, err := json.Marshal(result)
+	if err != nil {
+		return sb.String() + fmt.Sprintf("%v", result)
+	}
+	type contentItem struct {
+		Type string `json:"type"`
+		Text string `json:"text"`
+	}
+	type toolResult struct {
+		Content []contentItem `json:"content"`
+	}
+	var tr toolResult
+	if err := json.Unmarshal(jsonBytes, &tr); err == nil {
+		for _, c := range tr.Content {
+			if c.Type == "text" {
+				var parsed interface{}
+				if json.Unmarshal([]byte(c.Text), &parsed) == nil {
+					prettyJSON, _ := json.MarshalIndent(parsed, "", "  ")
+					sb.WriteString(string(prettyJSON) + "\n")
+				} else {
+					sb.WriteString(c.Text + "\n")
+				}
+			}
+		}
+		return sb.String()
+	}
+	return sb.String() + fmt.Sprintf("%v", result)
 }

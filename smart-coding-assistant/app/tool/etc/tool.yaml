@@ -3,3 +3,8 @@ ListenOn: 0.0.0.0:50052
 
 MCP:
   Port: "8081"
+
+LLM:
+  Endpoint: "https://api.deepseek.com/v1/chat/completions"
+  APIKey: "sk-ae73d219e2aa48d98beef3c54588e8fd"
+  Model: "deepseek-chat"

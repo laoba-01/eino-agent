@@ -13,4 +13,9 @@ type Config struct {
 		Model    string
 	}
 	MemoryRpc zrpc.RpcClientConf
+	LLM struct {
+		Endpoint string
+		APIKey   string
+		Model    string
+	}
 }

@@ -4,12 +4,16 @@ import (
 	"context"
 	"log"
 	"os"
+	"time"
 
 	memorypb "smart-coding-assistant/app/memory/pb"
 
 	"smart-coding-assistant/app/core/internal/config"
 	"smart-coding-assistant/app/core/internal/embedding"
+	"smart-coding-assistant/app/core/internal/executor"
 	"smart-coding-assistant/app/core/internal/mcp"
+	"smart-coding-assistant/app/core/internal/planner"
+	"smart-coding-assistant/pkg/llm"
 
 	"github.com/zeromicro/go-zero/zrpc"
 )
@@ -19,12 +23,15 @@ type ServiceContext struct {
 	MCPClient *mcp.ClientManager
 	Embedding *embedding.EmbeddingClient
 	MemoryRpc memorypb.MemoryServiceClient
+	Planner   planner.Planner
+	Executor  executor.Executor
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	// 解析 Embedding API Key（支持环境变量如 ${DEEPSEEK_API_KEY}）
-	apiKey := os.ExpandEnv(c.Embedding.ApiKey)
+	mcpClient := mcp.NewClientManager(context.Background(), c.MCP.Endpoints)
 
+	// Embedding 客户端（语义记忆）
+	apiKey := os.ExpandEnv(c.Embedding.ApiKey)
 	var embClient *embedding.EmbeddingClient
 	if apiKey != "" && c.Embedding.Endpoint != "" {
 		embClient = embedding.NewEmbeddingClient(c.Embedding.Endpoint, apiKey, c.Embedding.Model)
@@ -33,15 +40,25 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		log.Printf("[Core] 警告: Embedding 未配置，语义记忆功能将不可用")
 	}
 
-	// 连接 Memory RPC
+	// Memory RPC 客户端
 	memoryConn := zrpc.MustNewClient(c.MemoryRpc)
 	memoryRpc := memorypb.NewMemoryServiceClient(memoryConn.Conn())
 	log.Printf("[Core] Memory RPC 客户端已连接")
 
+	// LLM 客户端（Planner + Executor）
+	llmClient := llm.NewClient(llm.Config{
+		Endpoint: c.LLM.Endpoint,
+		APIKey:   c.LLM.APIKey,
+		Model:    c.LLM.Model,
+		Timeout:  60 * time.Second,
+	})
+
 	return &ServiceContext{
 		Config:    c,
-		MCPClient: mcp.NewClientManager(context.Background(), c.MCP.Endpoints),
+		MCPClient: mcpClient,
 		Embedding: embClient,
 		MemoryRpc: memoryRpc,
+		Planner:   planner.NewLLMPlanner(llmClient),
+		Executor:  executor.NewDefaultExecutor(mcpClient, llmClient),
 	}
 }

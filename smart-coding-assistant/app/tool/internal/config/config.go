@@ -7,4 +7,9 @@ type Config struct {
 	MCP struct {
 		Port string
 	}
+	LLM struct {
+		Endpoint string
+		APIKey   string
+		Model    string
+	}
 }
