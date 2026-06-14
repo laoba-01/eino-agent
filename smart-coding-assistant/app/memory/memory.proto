@@ -19,11 +19,14 @@ message SaveContextRequest {
   string user_id = 1;
   map<string, string> context = 2;
   int64 ttl = 3;
+  int64 expected_version = 4;  // 乐观锁：期望的版本号，0=无条件写入
 }
 
 message SaveContextResponse {
   bool success = 1;
   string error = 2;
+  int64 new_version = 3;       // 写入成功后的新版本号
+  int64 current_version = 4;   // 冲突时返回当前版本号（error="VERSION_CONFLICT"）
 }
 
 message GetContextRequest {
@@ -35,27 +38,33 @@ message GetContextResponse {
   map<string, string> context = 1;
   bool success = 2;
   string error = 3;
+  int64 version = 4;           // 当前数据版本号（用于后续 CAS 写入）
 }
 
 message DeleteContextRequest {
   string user_id = 1;
   repeated string keys = 2;
+  int64 expected_version = 3;  // 乐观锁：期望的版本号，0=无条件删除
 }
 
 message DeleteContextResponse {
   bool success = 1;
   string error = 2;
+  int64 current_version = 3;   // 冲突时返回当前版本号
 }
 
 message UpdateContextRequest {
   string user_id = 1;
   map<string, string> context = 2;
   int64 ttl = 3;
+  int64 expected_version = 4;  // 乐观锁：期望的版本号，0=无条件写入
 }
 
 message UpdateContextResponse {
   bool success = 1;
   string error = 2;
+  int64 new_version = 3;       // 写入成功后的新版本号
+  int64 current_version = 4;   // 冲突时返回当前版本号（error="VERSION_CONFLICT"）
 }
 
 message SaveVectorRequest {

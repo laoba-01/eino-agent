@@ -32,8 +32,12 @@ func (l *SearchSimilarLogic) SearchSimilar(in *pb.SearchSimilarRequest) (*pb.Sea
 		topK = defaultTopK
 	}
 
-	if err := l.svcCtx.Milvus.LoadCollection(l.ctx, in.Collection, false); err != nil {
-		return &pb.SearchSimilarResponse{Success: false, Error: fmt.Sprintf("load collection: %v", err)}, nil
+	// 懒加载: 仅首次搜索时加载 collection 到内存
+	if _, loaded := l.svcCtx.LoadedCols.LoadOrStore(in.Collection, true); !loaded {
+		if err := l.svcCtx.Milvus.LoadCollection(l.ctx, in.Collection, false); err != nil {
+			l.svcCtx.LoadedCols.Delete(in.Collection) // 回滚标记
+			return &pb.SearchSimilarResponse{Success: false, Error: fmt.Sprintf("load collection: %v", err)}, nil
+		}
 	}
 
 	queryVec := make([]float32, len(in.QueryVector))

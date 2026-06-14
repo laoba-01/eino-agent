@@ -3,6 +3,14 @@ ListenOn: 0.0.0.0:50053
 
 BizRedis:
   Addr: localhost:6379
+  PoolSize: 50
+  MinIdleConns: 10
+  DialTimeout: 1000
+  ReadTimeout: 500
+  WriteTimeout: 500
+  MaxRetries: 2
+  DB: 0
+  Password: ""
 
 Milvus:
   Addr: localhost:19530
