@@ -41,17 +41,20 @@ func (l *ChatLogic) Chat(in *pb.ChatRequest) (*pb.ChatResponse, error) {
 	if sysPrompt == "" {
 		sysPrompt = l.svcCtx.SystemPrompt["zh"] // fallback
 	}
-	l.svcCtx.Agent.SetSystemPrompt(sysPrompt)
 
 	// ========== RAG 语义召回 ==========
-	recalledHistory := l.recallSimilarHistory(in.GetUserId(), message)
+	recalledHistory := l.recallSimilarHistory(in.GetUserId(), message, lang)
 	// ========== Eino Agent ==========
 	agentInput := message
 	if recalledHistory != "" {
-		agentInput = fmt.Sprintf("【历史上下文】\n%s\n\n【当前问题】\n%s", recalledHistory, message)
+		if lang == "en" {
+			agentInput = fmt.Sprintf("[Historical Context]\n%s\n\n[Current Question]\n%s", recalledHistory, message)
+		} else {
+			agentInput = fmt.Sprintf("【历史上下文】\n%s\n\n【当前问题】\n%s", recalledHistory, message)
+		}
 	}
 
-	response, err := l.svcCtx.Agent.Run(l.ctx, agentInput)
+	response, err := l.svcCtx.Agent.Run(l.ctx, sysPrompt, agentInput)
 	if err != nil {
 		if lang == "en" {
 			response = fmt.Sprintf("Sorry, an error occurred: %v\n\nPlease try again or describe your problem more specifically.", err)
@@ -77,7 +80,7 @@ func (l *ChatLogic) Chat(in *pb.ChatRequest) (*pb.ChatResponse, error) {
 // RAG: Eino Embedder + MemoryRpc
 // ==============================
 
-func (l *ChatLogic) recallSimilarHistory(userId, message string) string {
+func (l *ChatLogic) recallSimilarHistory(userId, message, lang string) string {
 	if l.svcCtx.Embedder == nil || l.svcCtx.MemoryRpc == nil {
 		return ""
 	}
@@ -104,14 +107,25 @@ func (l *ChatLogic) recallSimilarHistory(userId, message string) string {
 	}
 
 	var sb strings.Builder
-	sb.WriteString("【相关历史对话】\n")
+	if lang == "en" {
+		sb.WriteString("[Relevant Chat History]\n")
+	} else {
+		sb.WriteString("【相关历史对话】\n")
+	}
 	for i, r := range resp.Results {
 		q := r.Metadata["q"]
 		a := r.Metadata["a"]
 		if q == "" { continue }
-		fmt.Fprintf(&sb, "%d. 问: %s\n", i+1, q)
-		if a != "" {
-			fmt.Fprintf(&sb, "   答: %s\n", a)
+		if lang == "en" {
+			fmt.Fprintf(&sb, "%d. Q: %s\n", i+1, q)
+			if a != "" {
+				fmt.Fprintf(&sb, "   A: %s\n", a)
+			}
+		} else {
+			fmt.Fprintf(&sb, "%d. 问: %s\n", i+1, q)
+			if a != "" {
+				fmt.Fprintf(&sb, "   答: %s\n", a)
+			}
 		}
 	}
 	return sb.String()
