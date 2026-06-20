@@ -59,6 +59,7 @@
         .btn-logout:hover {
             background: #d32f2f;
         }
+        .btn-lang.active { background: #667eea !important; }
         .container {
             max-width: 900px;
             margin: 0 auto;
@@ -200,6 +201,8 @@
             30% { transform: translateY(-5px); }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -210,6 +213,8 @@
         <div class="user-info">
             <span class="username" id="username"></span>
             <button class="btn btn-logout" onclick="handleLogout()">退出</button>
+            <button class="btn btn-lang active" id="langZh" onclick="switchLang('zh')" style="background:#667eea;color:white;margin-right:5px;">中文</button>
+            <button class="btn btn-lang" id="langEn" onclick="switchLang('en')" style="background:#999;color:white;">EN</button>
         </div>
     </nav>
 
@@ -234,7 +239,7 @@
 
         <div class="chat-container">
             <div class="chat-header">
-                <h2>💬 开始对话</h2>
+                <h2 id="chatHeader">💬 开始对话</h2>
             </div>
             <div class="chat-history" id="chatHistory">
                 <div class="message assistant">
@@ -254,10 +259,39 @@
     </div>
 
     <script>
+        const I18N = {
+            zh: {
+                title: "智能编程学习助手",
+                featureLabels: ["代码调试", "语法查询", "刷题辅助"],
+                featureDescs: ["分析错误，提供修复建议", "查询语法，提供示例", "提供思路和代码实现"],
+                chatHeader: "💬 开始对话",
+                welcomeMsg: "你好！我是智能编程学习助手，有什么可以帮助你的吗？",
+                placeholder: "输入你的编程问题...",
+                send: "发送",
+                logout: "退出",
+                errorMsg: "抱歉，系统暂时无法响应，请稍后再试。",
+                unauthorized: "未登录，正在跳转...",
+            },
+            en: {
+                title: "AI Coding Tutor",
+                featureLabels: ["Debug", "Syntax", "Practice"],
+                featureDescs: ["Analyze errors, get fixes", "Query syntax, see examples", "Get solutions and code"],
+                chatHeader: "💬 Start Chat",
+                welcomeMsg: "Hello! I'm your AI coding tutor. How can I help?",
+                placeholder: "Ask a coding question...",
+                send: "Send",
+                logout: "Logout",
+                errorMsg: "Sorry, the system is temporarily unavailable. Please try again later.",
+                unauthorized: "Not logged in, redirecting...",
+            }
+        };
+
         const API_BASE = 'http://localhost:8080';
 
         // 检查登录状态
         window.addEventListener('load', () => {
+            applyI18n();
+
             const token = localStorage.getItem('token');
             const username = localStorage.getItem('username');
 
@@ -303,19 +337,66 @@
             document.getElementById('typingIndicator').style.display = show ? 'block' : 'none';
         }
 
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function renderMarkdown(text) {
+            let html = escapeHtml(text);
+            html = html.replace(/```(\w*)\n([\s\S]*?)```/g, function(match, lang, code) {
+                return '<pre><code class="language-' + (lang || 'plaintext') + '">' + escapeHtml(code) + '</code></pre>';
+            });
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+            return html;
+        }
+
         // 添加消息到聊天历史
         function addMessage(role, content) {
             const chatHistory = document.getElementById('chatHistory');
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${role}`;
+            messageDiv.className = 'message ' + role;
 
             const bubbleDiv = document.createElement('div');
             bubbleDiv.className = 'message-bubble';
-            bubbleDiv.textContent = content;
+            bubbleDiv.innerHTML = renderMarkdown(content);
 
             messageDiv.appendChild(bubbleDiv);
             chatHistory.appendChild(messageDiv);
             chatHistory.scrollTop = chatHistory.scrollHeight;
+
+            bubbleDiv.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightElement(block);
+            });
+        }
+
+        let currentLang = localStorage.getItem('lang') || (navigator.language.startsWith('zh') ? 'zh' : 'en');
+
+        function switchLang(lang) {
+            currentLang = lang;
+            localStorage.setItem('lang', lang);
+            applyI18n();
+        }
+
+        function applyI18n() {
+            const t = I18N[currentLang];
+            document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
+            document.title = t.title;
+            document.querySelector('.navbar-brand h1').textContent = t.title;
+            document.querySelector('#chatHeader').textContent = t.chatHeader;
+            document.querySelector('#messageInput').placeholder = t.placeholder;
+            document.querySelector('.send-btn').textContent = t.send;
+            document.querySelector('.btn-logout').textContent = t.logout;
+
+            const features = document.querySelectorAll('.feature');
+            features.forEach(function(el, i) {
+                el.querySelector('h3').textContent = t.featureLabels[i];
+                el.querySelector('p').textContent = t.featureDescs[i];
+            });
+
+            document.getElementById('langZh').style.background = currentLang === 'zh' ? '#667eea' : '#999';
+            document.getElementById('langEn').style.background = currentLang === 'en' ? '#667eea' : '#999';
         }
 
         // 发送消息
@@ -338,7 +419,8 @@
                     headers: getAuthHeaders(),
                     body: JSON.stringify({
                         message: message,
-                        context: {}
+                        context: {},
+                        language: currentLang
                     })
                 });
 
@@ -358,7 +440,7 @@
                 addMessage('assistant', data.response);
             } catch (error) {
                 console.error('错误:', error);
-                addMessage('assistant', '抱歉，系统暂时无法响应，请稍后再试。');
+                addMessage('assistant', I18N[currentLang].errorMsg);
             } finally {
                 showTyping(false);
             }
