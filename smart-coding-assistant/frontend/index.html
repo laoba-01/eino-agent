@@ -59,7 +59,8 @@
         .btn-logout:hover {
             background: #d32f2f;
         }
-        .btn-lang.active { background: #667eea !important; }
+        .btn-lang { background: #999; color: white; margin-right: 5px; }
+        .btn-lang.active { background: #667eea; }
         .container {
             max-width: 900px;
             margin: 0 auto;
@@ -213,8 +214,8 @@
         <div class="user-info">
             <span class="username" id="username"></span>
             <button class="btn btn-logout" onclick="handleLogout()">退出</button>
-            <button class="btn btn-lang active" id="langZh" onclick="switchLang('zh')" style="background:#667eea;color:white;margin-right:5px;">中文</button>
-            <button class="btn btn-lang" id="langEn" onclick="switchLang('en')" style="background:#999;color:white;">EN</button>
+            <button class="btn btn-lang active" id="langZh" onclick="switchLang('zh')">中文</button>
+            <button class="btn btn-lang" id="langEn" onclick="switchLang('en')">EN</button>
         </div>
     </nav>
 
@@ -243,7 +244,7 @@
             </div>
             <div class="chat-history" id="chatHistory">
                 <div class="message assistant">
-                    <div class="message-bubble">
+                    <div class="message-bubble" id="welcomeMsg">
                         你好！我是智能编程学习助手，有什么可以帮助你的吗？
                     </div>
                 </div>
@@ -346,7 +347,7 @@
         function renderMarkdown(text) {
             let html = escapeHtml(text);
             html = html.replace(/```(\w*)\n([\s\S]*?)```/g, function(match, lang, code) {
-                return '<pre><code class="language-' + (lang || 'plaintext') + '">' + escapeHtml(code) + '</code></pre>';
+                return '<pre><code class="language-' + (lang || 'plaintext') + '">' + code + '</code></pre>';
             });
             html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
             return html;
@@ -385,6 +386,7 @@
             document.title = t.title;
             document.querySelector('.navbar-brand h1').textContent = t.title;
             document.querySelector('#chatHeader').textContent = t.chatHeader;
+            document.getElementById('welcomeMsg').textContent = t.welcomeMsg;
             document.querySelector('#messageInput').placeholder = t.placeholder;
             document.querySelector('.send-btn').textContent = t.send;
             document.querySelector('.btn-logout').textContent = t.logout;
@@ -395,8 +397,8 @@
                 el.querySelector('p').textContent = t.featureDescs[i];
             });
 
-            document.getElementById('langZh').style.background = currentLang === 'zh' ? '#667eea' : '#999';
-            document.getElementById('langEn').style.background = currentLang === 'en' ? '#667eea' : '#999';
+            document.getElementById('langZh').classList.toggle('active', currentLang === 'zh');
+            document.getElementById('langEn').classList.toggle('active', currentLang === 'en');
         }
 
         // 发送消息
