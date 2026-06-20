@@ -51,6 +51,11 @@ func New(ctx context.Context, cfg Config, mcpClient *mcpmgr.ClientManager) (*Age
 	}, nil
 }
 
+// SetSystemPrompt 设置系统提示词（在 Run 之前调用，按请求语言选择）
+func (a *Agent) SetSystemPrompt(prompt string) {
+	a.systemPrompt = prompt
+}
+
 // Run 执行 Agent：接收用户消息，返回最终响应
 func (a *Agent) Run(ctx context.Context, userMessage string) (string, error) {
 	msgs := []*schema.Message{

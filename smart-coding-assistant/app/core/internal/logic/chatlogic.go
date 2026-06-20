@@ -31,6 +31,18 @@ func NewChatLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ChatLogic {
 //   3. 异步回存对话到向量记忆
 func (l *ChatLogic) Chat(in *pb.ChatRequest) (*pb.ChatResponse, error) {
 	message := in.GetMessage()
+
+	// 按请求语言选择 system prompt
+	lang := in.GetLanguage()
+	if lang == "" {
+		lang = "zh"
+	}
+	sysPrompt := l.svcCtx.SystemPrompt[lang]
+	if sysPrompt == "" {
+		sysPrompt = l.svcCtx.SystemPrompt["zh"] // fallback
+	}
+	l.svcCtx.Agent.SetSystemPrompt(sysPrompt)
+
 	// ========== RAG 语义召回 ==========
 	recalledHistory := l.recallSimilarHistory(in.GetUserId(), message)
 	// ========== Eino Agent ==========
@@ -41,7 +53,11 @@ func (l *ChatLogic) Chat(in *pb.ChatRequest) (*pb.ChatResponse, error) {
 
 	response, err := l.svcCtx.Agent.Run(l.ctx, agentInput)
 	if err != nil {
-		response = fmt.Sprintf("抱歉，执行过程中出现错误: %v\n\n请稍后重试或更具体地描述你的问题。", err)
+		if lang == "en" {
+			response = fmt.Sprintf("Sorry, an error occurred: %v\n\nPlease try again or describe your problem more specifically.", err)
+		} else {
+			response = fmt.Sprintf("抱歉，执行过程中出现错误: %v\n\n请稍后重试或更具体地描述你的问题。", err)
+		}
 	}
 
 	// ========== 异步存储 ==========

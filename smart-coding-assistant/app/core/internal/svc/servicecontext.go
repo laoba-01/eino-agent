@@ -20,11 +20,12 @@ import (
 )
 
 type ServiceContext struct {
-	Config    config.Config
-	MCPClient *mcp.ClientManager
-	Embedder  embedding.Embedder
-	MemoryRpc memorypb.MemoryServiceClient
-	Agent     *agent.Agent
+	Config       config.Config
+	MCPClient    *mcp.ClientManager
+	Embedder     embedding.Embedder
+	MemoryRpc    memorypb.MemoryServiceClient
+	Agent        *agent.Agent
+	SystemPrompt map[string]string // 多语言 system prompt
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -69,9 +70,9 @@ func NewServiceContext(c config.Config) *ServiceContext {
 
 	// ===== Eino ReAct Agent（替代 Planner + Executor） =====
 	einoAgent, err := agent.New(context.Background(), agent.Config{
-		ChatModel:    chatModel,
-		MaxSteps:     12,
-		SystemPrompt: c.LLM.SystemPrompt, // 新增：系统提示词
+		ChatModel: chatModel,
+		MaxSteps:  12,
+		// SystemPrompt 不再此处固定，由 ChatLogic 运行时按语言选择
 	}, mcpClient)
 	if err != nil {
 		log.Printf("[Core] 严重: 创建 Agent 失败: %v", err)
@@ -80,10 +81,11 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	log.Printf("[Core] Eino ReAct Agent 已就绪")
 
 	return &ServiceContext{
-		Config:    c,
-		MCPClient: mcpClient,
-		Embedder:  embedder,
-		MemoryRpc: memoryRpc,
-		Agent:     einoAgent,
+		Config:       c,
+		MCPClient:    mcpClient,
+		Embedder:     embedder,
+		MemoryRpc:    memoryRpc,
+		Agent:        einoAgent,
+		SystemPrompt: c.LLM.SystemPrompt,
 	}
 }

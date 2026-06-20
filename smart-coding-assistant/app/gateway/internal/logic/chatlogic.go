@@ -44,8 +44,9 @@ func (l *ChatLogic) Handle(w http.ResponseWriter, r *http.Request) {
 	bodyBytes = fixGarbledGBK(bodyBytes)
 
 	var req struct {
-		Message string            `json:"message"`
-		Context map[string]string `json:"context"`
+		Message  string            `json:"message"`
+		Context  map[string]string `json:"context"`
+		Language string            `json:"language"`
 	}
 	if err := json.Unmarshal(bodyBytes, &req); err != nil {
 		w.Header().Set("Content-Type", "application/json")
@@ -56,9 +57,10 @@ func (l *ChatLogic) Handle(w http.ResponseWriter, r *http.Request) {
 
 	// 所有请求透传到核心服务（不再在网关层拦截）
 	resp, err := l.svcCtx.CoreRpc.Chat(r.Context(), &corepb.ChatRequest{
-		UserId:  userID,
-		Message: req.Message,
-		Context: req.Context,
+		UserId:   userID,
+		Message:  req.Message,
+		Context:  req.Context,
+		Language: req.Language,
 	})
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
