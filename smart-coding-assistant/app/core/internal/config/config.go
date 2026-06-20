@@ -17,6 +17,6 @@ type Config struct {
 		Endpoint     string
 		APIKey       string
 		Model        string
-		SystemPrompt string // 新增：系统提示词
+		SystemPrompt map[string]string // "zh"/"en" -> prompt text
 	}
 }
