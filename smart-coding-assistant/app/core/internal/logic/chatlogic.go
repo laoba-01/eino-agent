@@ -45,7 +45,10 @@ func (l *ChatLogic) Chat(in *pb.ChatRequest) (*pb.ChatResponse, error) {
 	}
 
 	// ========== 异步存储 ==========
-	go l.rememberMessage(in.GetUserId(), message, response)
+	// 仅在 Agent 成功响应时存储，避免错误回复污染 RAG 记忆
+	if err == nil {
+		go l.rememberMessage(in.GetUserId(), message, response)
+	}
 
 	return &pb.ChatResponse{
 		Response:   response,
