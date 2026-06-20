@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"strings"
 
 	corepb "smart-coding-assistant/app/core/pb"
 	"smart-coding-assistant/app/gateway/internal/svc"
@@ -55,18 +54,7 @@ func (l *ChatLogic) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 在网关层拦截系统/闲聊问题，直接返回（避免后端中文编码问题）
-	if sysResp := handleSystemQuestion(req.Message); sysResp != "" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(corepb.ChatResponse{
-			Response:   sysResp,
-			IsFinished: true,
-			Context:    req.Context,
-		})
-		return
-	}
-
+	// 所有请求透传到核心服务（不再在网关层拦截）
 	resp, err := l.svcCtx.CoreRpc.Chat(r.Context(), &corepb.ChatRequest{
 		UserId:  userID,
 		Message: req.Message,
@@ -122,54 +110,4 @@ func isUTF8(data []byte) bool {
 	return false
 }
 
-// handleSystemQuestion 在网关层处理系统/闲聊问题
-func handleSystemQuestion(msg string) string {
-	msgLower := strings.ToLower(msg)
 
-	// 模型相关
-	if strings.Contains(msgLower, "模型") || strings.Contains(msgLower, "model") ||
-		strings.Contains(msgLower, "什么模型") || strings.Contains(msgLower, "你用的是什么") {
-		return "我目前是基于规则匹配的编程学习助手，尚未接入大语言模型。\n\n" +
-			"我能通过关键词识别你的意图，并调用对应的工具：\n" +
-			"- 分析代码错误 — 发送报错信息帮你定位问题\n" +
-			"- 查询编程语法 — 解释编程语言的各种概念\n" +
-			"- 生成解题方案 — 提供算法思路和代码实现\n\n" +
-			"未来接入 LLM 后会有更强的对话能力！"
-	}
-
-	// 身份相关
-	if strings.Contains(msgLower, "你是谁") || strings.Contains(msgLower, "你叫什么") ||
-		strings.Contains(msgLower, "你的名字") || strings.Contains(msgLower, "你是什么") ||
-		strings.Contains(msgLower, "who are you") {
-		return "我是**智能编程学习助手**，一个帮助你学习编程的 AI Agent。\n\n可以分析代码错误、解释语法概念、生成解题方案。试试问我编程问题吧！"
-	}
-
-	// 功能相关
-	if strings.Contains(msgLower, "你能做什么") || strings.Contains(msgLower, "有什么功能") ||
-		strings.Contains(msgLower, "help") || strings.Contains(msgLower, "功能") {
-		return "我能帮你：\n\n" +
-			"1. 分析代码错误 — 发送包含错误信息的消息\n" +
-			"   示例: 我的 Python 代码报错 TypeError: ...\n\n" +
-			"2. 查询语法概念 — 询问编程语言语法\n" +
-			"   示例: 解释一下 Go 的 goroutine\n\n" +
-			"3. 生成解题方案 — 描述编程问题\n" +
-			"   示例: 用 Go 实现 two sum 算法"
-	}
-
-	// 打招呼
-	if msgLower == "hi" || msgLower == "hello" || msgLower == "你好" ||
-		strings.Contains(msgLower, "在吗") {
-		return "你好！有什么编程问题需要帮助吗？\n\n" +
-			"- 代码报错了？把错误信息发给我\n" +
-			"- 想了解某个语法？直接问我\n" +
-			"- 需要解题思路？告诉我题目"
-	}
-
-	// 感谢
-	if strings.Contains(msgLower, "谢谢") || strings.Contains(msgLower, "感谢") ||
-		strings.Contains(msgLower, "thank") || strings.Contains(msgLower, "thanks") {
-		return "不客气！有问题随时问我"
-	}
-
-	return ""
-}
