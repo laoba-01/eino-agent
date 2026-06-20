@@ -14,8 +14,9 @@ type Config struct {
 	}
 	MemoryRpc zrpc.RpcClientConf
 	LLM struct {
-		Endpoint string
-		APIKey   string
-		Model    string
+		Endpoint     string
+		APIKey       string
+		Model        string
+		SystemPrompt string // 新增：系统提示词
 	}
 }

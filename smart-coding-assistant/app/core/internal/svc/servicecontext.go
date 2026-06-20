@@ -69,8 +69,9 @@ func NewServiceContext(c config.Config) *ServiceContext {
 
 	// ===== Eino ReAct Agent（替代 Planner + Executor） =====
 	einoAgent, err := agent.New(context.Background(), agent.Config{
-		ChatModel: chatModel,
-		MaxSteps:  12,
+		ChatModel:    chatModel,
+		MaxSteps:     12,
+		SystemPrompt: c.LLM.SystemPrompt, // 新增：系统提示词
 	}, mcpClient)
 	if err != nil {
 		log.Printf("[Core] 严重: 创建 Agent 失败: %v", err)
