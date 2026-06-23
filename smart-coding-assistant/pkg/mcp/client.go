@@ -28,7 +28,6 @@ func (a *acceptHeaderRoundTripper) RoundTrip(req *http.Request) (*http.Response,
 
 type pooledSession struct {
 	session *mcp.ClientSession
-	client  *mcp.Client
 	healthy atomic.Bool
 }
 
@@ -56,12 +55,14 @@ type sessionPool struct {
 	sessions []*pooledSession
 	next     atomic.Uint64
 	endpoint string
+	done     chan struct{}
 }
 
 func newSessionPool(ctx context.Context, endpoint string, size int) *sessionPool {
 	pool := &sessionPool{
 		sessions: make([]*pooledSession, 0, size),
 		endpoint: endpoint,
+		done:     make(chan struct{}),
 	}
 
 	for i := 0; i < size; i++ {
@@ -88,7 +89,6 @@ func newSessionPool(ctx context.Context, endpoint string, size int) *sessionPool
 			log.Printf("已创建 MCP 连接 #%d 到 %s", i, endpoint)
 		}
 
-		ps.client = client
 		ps.session = session
 		pool.sessions = append(pool.sessions, ps)
 	}
@@ -163,6 +163,7 @@ func (p *sessionPool) listTools(ctx context.Context) ([]*mcp.Tool, error) {
 }
 
 func (p *sessionPool) close() {
+	close(p.done)
 	for _, ps := range p.sessions {
 		ps.close()
 	}
@@ -172,17 +173,22 @@ func (p *sessionPool) healthCheckLoop() {
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
-	for range ticker.C {
-		for _, ps := range p.sessions {
-			if ps.isHealthy() {
-				continue
-			}
-			if ps.session == nil {
-				continue
-			}
-			if err := ps.session.Ping(context.Background(), nil); err == nil {
-				log.Printf("MCP 连接到 %s 已恢复", p.endpoint)
-				ps.markHealthy()
+	for {
+		select {
+		case <-p.done:
+			return
+		case <-ticker.C:
+			for _, ps := range p.sessions {
+				if ps.isHealthy() {
+					continue
+				}
+				if ps.session == nil {
+					continue
+				}
+				if err := ps.session.Ping(context.Background(), nil); err == nil {
+					log.Printf("MCP 连接到 %s 已恢复", p.endpoint)
+					ps.markHealthy()
+				}
 			}
 		}
 	}
