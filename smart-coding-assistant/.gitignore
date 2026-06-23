@@ -36,6 +36,12 @@ __pycache__/
 .venv/
 venv/
 
+# --- Build ---
+bin/
+
 # --- Node (frontend) ---
 node_modules/
 dist/
+
+# --- Archives ---
+*.zip
