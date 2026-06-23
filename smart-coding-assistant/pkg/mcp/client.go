@@ -230,16 +230,25 @@ func NewClientManagerWithPoolSize(ctx context.Context, endpointsStr string, pool
 
 func (m *ClientManager) ListAllTools(ctx context.Context) map[string][]*mcp.Tool {
 	result := make(map[string][]*mcp.Tool)
-	m.mu.RLock()
-	defer m.mu.RUnlock()
 
+	m.mu.RLock()
+	type entry struct {
+		name string
+		pool *sessionPool
+	}
+	entries := make([]entry, 0, len(m.pools))
 	for name, pool := range m.pools {
-		tools, err := pool.listTools(ctx)
+		entries = append(entries, entry{name, pool})
+	}
+	m.mu.RUnlock()
+
+	for _, e := range entries {
+		tools, err := e.pool.listTools(ctx)
 		if err != nil {
-			log.Printf("警告: 获取 %s 的工具列表失败: %v", name, err)
+			log.Printf("警告: 获取 %s 的工具列表失败: %v", e.name, err)
 			continue
 		}
-		result[name] = tools
+		result[e.name] = tools
 	}
 	return result
 }
