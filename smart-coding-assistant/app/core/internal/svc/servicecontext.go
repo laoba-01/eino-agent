@@ -29,7 +29,11 @@ type ServiceContext struct {
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	mcpClient := mcp.NewClientManager(context.Background(), c.MCP.Endpoints)
+	poolSize := c.MCP.PoolSize
+	if poolSize <= 0 {
+		poolSize = 4
+	}
+	mcpClient := mcp.NewClientManagerWithPoolSize(context.Background(), c.MCP.Endpoints, poolSize)
 
 	// ===== Eino Embedder（替代手写 embedding client） =====
 	var embedder embedding.Embedder
