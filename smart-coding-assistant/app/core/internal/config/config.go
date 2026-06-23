@@ -6,6 +6,7 @@ type Config struct {
 	zrpc.RpcServerConf
 	MCP struct {
 		Endpoints string
+		PoolSize  int `json:",default=4"`
 	}
 	Embedding struct {
 		Endpoint string

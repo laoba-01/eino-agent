@@ -3,6 +3,7 @@ ListenOn: 0.0.0.0:50051
 
 MCP:
   Endpoints: "tool-service=http://localhost:8081/mcp"
+  PoolSize: 4
 
 Embedding:
   Endpoint: https://open.bigmodel.cn/api/paas/v4
